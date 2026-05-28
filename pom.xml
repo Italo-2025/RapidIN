@@ -66,8 +66,7 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version>
         <configuration>
-            <!-- Esse é o caminho da sua classe principal (Main) -->
-            <mainClass>com.rapidIN.App</mainClass>
+            <mainClass>com.rapidIN.Main</mainClass>
         </configuration>
     </plugin>
 

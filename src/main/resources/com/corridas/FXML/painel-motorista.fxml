@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.rapidIN.controller.PainelMotoristaController"
+      styleClass="tela-corrida"
+      spacing="0"
+      prefWidth="900" prefHeight="660">
+
+    <!-- Header -->
+    <HBox styleClass="header" alignment="CENTER_LEFT" spacing="12">
+        <Label text="RapidIN" styleClass="logo-header"/>
+        <Label text="MOTORISTA" styleClass="badge-motorista"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="labelNomeMotorista" text="Motorista" styleClass="nome-usuario"/>
+        <ToggleButton fx:id="toggleDisponivel"
+                      text="OFFLINE"
+                      onAction="#alternarDisponibilidade"
+                      styleClass="toggle-status"/>
+        <Button text="Sair" onAction="#logout" styleClass="botao-sair"/>
+    </HBox>
+
+    <!-- Tabs -->
+    <TabPane VBox.vgrow="ALWAYS"
+             tabClosingPolicy="UNAVAILABLE"
+             styleClass="tab-painel">
+
+        <!-- Tab: Corridas Disponiveis -->
+        <Tab text="Corridas Disponiveis">
+            <VBox styleClass="conteudo-tab" spacing="12">
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="Corridas Aguardando Motorista" styleClass="titulo-secao"/>
+                    <Button text="Atualizar"
+                            onAction="#carregarCorridasDisponiveis"
+                            styleClass="botao-secundario"/>
+                </HBox>
+
+                <TableView fx:id="tabelaDisponiveis" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="dColOrigem"     text="Origem"     prefWidth="210"/>
+                        <TableColumn fx:id="dColDestino"    text="Destino"    prefWidth="210"/>
+                        <TableColumn fx:id="dColPassageiro" text="Passageiro" prefWidth="170"/>
+                        <TableColumn fx:id="dColPreco"      text="Preco"      prefWidth="100"/>
+                    </columns>
+                </TableView>
+
+                <HBox spacing="12">
+                    <Button text="Aceitar Corrida Selecionada"
+                            onAction="#aceitarCorrida"
+                            styleClass="botao-primario"/>
+                    <Button text="Recusar"
+                            onAction="#recusarCorrida"
+                            styleClass="botao-secundario"/>
+                </HBox>
+
+                <Label fx:id="labelAcaoStatus"
+                       text="Fique online para receber corridas."
+                       styleClass="status-aguardando"
+                       wrapText="true"/>
+
+            </VBox>
+        </Tab>
+
+        <!-- Tab: Historico -->
+        <Tab text="Historico de Corridas">
+            <VBox styleClass="conteudo-tab" spacing="12">
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="Suas Corridas Realizadas" styleClass="titulo-secao"/>
+                    <Button text="Atualizar"
+                            onAction="#carregarHistorico"
+                            styleClass="botao-secundario"/>
+                </HBox>
+
+                <TableView fx:id="tabelaHistoricoMotorista" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="hColOrigem"     text="Origem"     prefWidth="180"/>
+                        <TableColumn fx:id="hColDestino"    text="Destino"    prefWidth="180"/>
+                        <TableColumn fx:id="hColPassageiro" text="Passageiro" prefWidth="150"/>
+                        <TableColumn fx:id="hColStatus"     text="Status"     prefWidth="130"/>
+                        <TableColumn fx:id="hColPreco"      text="Preco"      prefWidth="100"/>
+                    </columns>
+                </TableView>
+
+            </VBox>
+        </Tab>
+
+    </TabPane>
+
+</VBox>

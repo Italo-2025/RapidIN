@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.rapidIN.controller.PainelPassageiroController"
+      styleClass="tela-corrida"
+      spacing="0"
+      prefWidth="900" prefHeight="660">
+
+    <!-- Header -->
+    <HBox styleClass="header" alignment="CENTER_LEFT" spacing="12">
+        <Label text="RapidIN" styleClass="logo-header"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="labelNomeUsuario" text="Passageiro" styleClass="nome-usuario"/>
+        <Button text="Sair" onAction="#logout" styleClass="botao-sair"/>
+    </HBox>
+
+    <!-- Tabs -->
+    <TabPane VBox.vgrow="ALWAYS"
+             tabClosingPolicy="UNAVAILABLE"
+             styleClass="tab-painel">
+
+        <!-- Tab: Solicitar Corrida -->
+        <Tab text="Solicitar Corrida">
+            <HBox spacing="20" styleClass="conteudo-tab">
+
+                <!-- Formulario -->
+                <VBox styleClass="painel-lateral" spacing="14">
+                    <Label text="Nova Corrida" styleClass="titulo-secao"/>
+
+                    <Label text="Local de Origem" styleClass="label-campo"/>
+                    <TextField fx:id="campoOrigem"
+                               promptText="Ex: Rua das Flores, 123"
+                               styleClass="campo-texto"/>
+
+                    <Label text="Local de Destino" styleClass="label-campo"/>
+                    <TextField fx:id="campoDestino"
+                               promptText="Ex: Av. Paulista, 1000"
+                               styleClass="campo-texto"/>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Preco estimado:" styleClass="label-campo"/>
+                        <Label fx:id="labelPreco" text="R$ --" styleClass="label-preco"/>
+                    </HBox>
+
+                    <Button text="Calcular Preco"
+                            onAction="#calcularPreco"
+                            styleClass="botao-secundario"/>
+
+                    <Button text="Solicitar Corrida"
+                            onAction="#solicitarCorrida"
+                            styleClass="botao-primario"/>
+
+                    <Label fx:id="labelStatus"
+                           text=""
+                           styleClass="status-aguardando"
+                           wrapText="true"/>
+                </VBox>
+
+                <!-- Corrida atual -->
+                <VBox styleClass="painel-lateral" spacing="12" HBox.hgrow="ALWAYS">
+                    <Label text="Corrida Atual" styleClass="titulo-secao"/>
+                    <Label fx:id="labelCorridaAtualInfo"
+                           text="Nenhuma corrida ativa no momento."
+                           styleClass="label-campo"
+                           wrapText="true"/>
+                </VBox>
+
+            </HBox>
+        </Tab>
+
+        <!-- Tab: Historico -->
+        <Tab text="Minhas Corridas">
+            <VBox styleClass="conteudo-tab" spacing="12">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="Historico de Corridas" styleClass="titulo-secao"/>
+                    <Button text="Atualizar"
+                            onAction="#carregarHistorico"
+                            styleClass="botao-secundario"/>
+                </HBox>
+
+                <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colOrigem"    text="Origem"    prefWidth="195"/>
+                        <TableColumn fx:id="colDestino"   text="Destino"   prefWidth="195"/>
+                        <TableColumn fx:id="colStatus"    text="Status"    prefWidth="130"/>
+                        <TableColumn fx:id="colPreco"     text="Preco"     prefWidth="100"/>
+                        <TableColumn fx:id="colMotorista" text="Motorista" prefWidth="170"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+    </TabPane>
+
+</VBox>
