@@ -84,22 +84,74 @@ public class procedureExecutor {
     //
     // Stored procedure chamada: sp_cadastrar_usuario(nome, email, senha, genero, tipo)
     // =========================================================================
+// =========================================================================
+// OPERAÇÃO: CADASTRO
+// Registra um novo usuário no sistema.
+// Chama proc_cadastrar_usuario com 11 parâmetros IN e 2 OUT.
+//
+// Parâmetros exclusivos por tipo:
+//   PASSAGEIRO → formaPagamento preenchida, resto null
+//   MOTORISTA  → numeroCnh/modeloVeiculo/placaVeiculo preenchidos, formaPagamento null
+//
+// Retorna true se o banco gerou um ID válido (novo_usuario_id > 0).
+// =========================================================================
     public static boolean cadastrarUsuario(String nome, String email, String senha,
-                                           String genero, String tipo) {
-        if (MOCK_MODE) return MockData.cadastrarUsuario(nome, email, senha, genero, tipo);
+                                           String cpf, String telefone,
+                                           String genero, String tipo,
+                                           String formaPagamento,
+                                           String numeroCnh, String modeloVeiculo,
+                                           String placaVeiculo) {
 
-        try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_cadastrar_usuario(?, ?, ?, ?, ?)}")) {
-            stmt.setString(1, nome);
-            stmt.setString(2, email);
-            stmt.setString(3, senha);
-            stmt.setString(4, genero); // "M" ou "F"
-            stmt.setString(5, tipo);   // "PASSAGEIRO" ou "MOTORISTA"
-            stmt.execute();
-            return true; // Cadastro realizado com sucesso
+        if (MOCK_MODE) return MockData.cadastrarUsuario(
+                nome, email, senha, cpf, telefone,
+                genero, tipo,
+                formaPagamento,
+                numeroCnh, modeloVeiculo, placaVeiculo);
+
+        // 13 "?" = 11 IN + 2 OUT, na ordem exata da procedure
+        String sql = "{ call proc_cadastrar_usuario(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+
+        try (CallableStatement cs = conexao.getConexao().prepareCall(sql)) {
+
+            // ── Parâmetros IN (posições 1 a 11) ──────────────────────────────
+            cs.setString(1, nome);
+            cs.setString(2, email);
+            cs.setString(3, senha);
+            cs.setString(4, cpf);
+            cs.setString(5, telefone);
+            cs.setString(6, genero);       // "F", "M" ou "NE"
+            cs.setString(7, tipo);         // "PASSAGEIRO" ou "MOTORISTA"
+
+            // Posição 8: só para passageiro
+            if (formaPagamento != null) cs.setString(8, formaPagamento);
+            else                        cs.setNull(8, Types.VARCHAR);
+
+            // Posição 9: só para motorista
+            if (numeroCnh != null) cs.setString(9, numeroCnh);
+            else                   cs.setNull(9, Types.VARCHAR);
+
+            // Posição 10: só para motorista
+            if (modeloVeiculo != null) cs.setString(10, modeloVeiculo);
+            else                       cs.setNull(10, Types.VARCHAR);
+
+            // Posição 11: só para motorista
+            if (placaVeiculo != null) cs.setString(11, placaVeiculo);
+            else                      cs.setNull(11, Types.VARCHAR);
+
+            // ── Parâmetros OUT (posições 12 e 13) ────────────────────────────
+            cs.registerOutParameter(12, Types.INTEGER); // novo_usuario_id
+            cs.registerOutParameter(13, Types.VARCHAR); // mensagem
+
+            cs.execute();
+
+            // ID positivo = banco criou o registro com sucesso
+            int novoId = cs.getInt(12);
+            System.out.println("[cadastro] " + cs.getString(13)); // loga a mensagem do banco
+            return novoId > 0;
+
         } catch (SQLException e) {
             System.err.println("Erro ao cadastrar: " + e.getMessage());
-            return false; // Falha no cadastro
+            return false;
         }
     }
 

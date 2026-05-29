@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.rapidIN.controller.CadastroController"
@@ -10,25 +12,31 @@
       spacing="18"
       prefWidth="900" prefHeight="660">
 
+
     <Label text="RapidIN" styleClass="titulo-principal"/>
     <Label text="Criar nova conta" styleClass="subtitulo"/>
 
+
     <VBox styleClass="card-login" spacing="12" alignment="CENTER_LEFT">
+
 
         <Label text="Nome completo" styleClass="label-campo"/>
         <TextField fx:id="campoNome"
                    promptText="Seu nome completo"
                    styleClass="campo-texto"/>
 
+
         <Label text="E-mail" styleClass="label-campo"/>
         <TextField fx:id="campoEmail"
                    promptText="seu@email.com"
                    styleClass="campo-texto"/>
 
+
         <Label text="Senha" styleClass="label-campo"/>
         <PasswordField fx:id="campoSenha"
                        promptText="Minimo 4 caracteres"
                        styleClass="campo-texto"/>
+
 
         <Label text="Genero" styleClass="label-campo"/>
         <HBox spacing="24">
@@ -36,25 +44,32 @@
             <RadioButton fx:id="radioFeminino"  text="Feminino"  styleClass="radio-campo"/>
         </HBox>
 
+
         <Label text="Perfil" styleClass="label-campo"/>
         <HBox spacing="24">
             <RadioButton fx:id="radioPassageiro" text="Passageiro" styleClass="radio-campo"/>
             <RadioButton fx:id="radioMotorista"  text="Motorista"  styleClass="radio-campo"/>
         </HBox>
 
+
         <Button text="Criar Conta"
                 onAction="#cadastrar"
                 styleClass="botao-primario"/>
+
 
         <Label fx:id="mensagem"
                styleClass="mensagem-erro"
                visible="false"
                wrapText="true"/>
 
+
         <Label text="Ja tem conta? Fazer login"
                styleClass="link-texto"
                onMouseClicked="#voltarLogin"/>
 
+
     </VBox>
 
+
 </VBox>
+

@@ -20,137 +20,145 @@ package com.rapidIN.controller;
 //   de um formulário físico onde você marca apenas um círculo.
 //   Ex.: você não pode ser Masculino E Feminino ao mesmo tempo.
 // ============================================================
-
-// Importações necessárias
-import com.rapidIN.App;                          // Para trocar de tela
-import com.rapidIN.database.procedureExecutor; // Para cadastrar no banco
-
-// Componentes visuais do JavaFX
+import com.rapidIN.App;
+import com.rapidIN.database.procedureExecutor;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;          // Texto estático / mensagens
-import javafx.scene.control.PasswordField;  // Campo de senha (texto oculto)
-import javafx.scene.control.RadioButton;    // Botão de seleção circular (●)
-import javafx.scene.control.TextField;      // Campo de texto livre
-import javafx.scene.control.ToggleGroup;   // Agrupa RadioButtons para permitir só uma seleção
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+@FXML private TextField     campoNome;
+@FXML private TextField     campoEmail;
+@FXML private PasswordField campoSenha;
+@FXML private TextField     campoCpf;
+@FXML private TextField     campoTelefone;
 
-public class CadastroController {
+@FXML private RadioButton radioMasculino;
+@FXML private RadioButton radioFeminino;
+@FXML private RadioButton radioNaoEspecificado;
 
-    // ── COMPONENTES VISUAIS ───────────────────────────────────────────────────
-    // @FXML vincula cada variável ao componente de mesmo id no arquivo cadastro.fxml
+@FXML private RadioButton radioPassageiro;
+@FXML private RadioButton radioMotorista;
 
-    @FXML private TextField campoNome;         // Campo de texto para o nome completo
-    @FXML private TextField campoEmail;        // Campo de texto para o e-mail
-    @FXML private PasswordField campoSenha;    // Campo de senha (mostra ●●●● enquanto digita)
+// Painel e campo exclusivos de passageiro
+@FXML private VBox             painelPassageiro;
+@FXML private ComboBox<String> comboFormaPagamento;
 
-    @FXML private RadioButton radioMasculino;  // Opção "Masculino" para gênero
-    @FXML private RadioButton radioFeminino;   // Opção "Feminino" para gênero
+// Painel e campos exclusivos de motorista
+@FXML private VBox      painelMotorista;
+@FXML private TextField campoCnh;
+@FXML private TextField campoModeloVeiculo;
+@FXML private TextField campoPlacaVeiculo;
 
-    @FXML private RadioButton radioPassageiro; // Opção "Passageiro" para tipo de conta
-    @FXML private RadioButton radioMotorista;  // Opção "Motorista" para tipo de conta
+@FXML private Label mensagem;
 
-    @FXML private Label mensagem;              // Label para exibir erros ou confirmações
-
-
-    // ── GRUPOS DE SELEÇÃO EXCLUSIVA ───────────────────────────────────────────
-    // ToggleGroup garante que apenas um RadioButton de cada grupo
-    // possa estar selecionado ao mesmo tempo.
-
-    // Grupo de gênero: Masculino OU Feminino (nunca os dois)
-    private final ToggleGroup grupoGenero = new ToggleGroup();
-
-    // Grupo de perfil: Passageiro OU Motorista (nunca os dois)
-    private final ToggleGroup grupoPerfil  = new ToggleGroup();
-
-
+private final ToggleGroup grupoGenero = new ToggleGroup();
+private final ToggleGroup grupoPerfil = new ToggleGroup();
     // ── INICIALIZAÇÃO ─────────────────────────────────────────────────────────
     // O JavaFX chama este método automaticamente logo após carregar o .fxml
     // e injetar os componentes com @FXML.
     // Aqui configuramos os grupos e definimos os valores padrão.
     @FXML
     public void initialize() {
-        // Associa os RadioButtons de gênero ao mesmo grupo
         radioMasculino.setToggleGroup(grupoGenero);
         radioFeminino.setToggleGroup(grupoGenero);
-        radioMasculino.setSelected(true);  // "Masculino" vem selecionado por padrão
+        radioNaoEspecificado.setToggleGroup(grupoGenero);
+        radioMasculino.setSelected(true);
 
-        // Associa os RadioButtons de perfil ao mesmo grupo
         radioPassageiro.setToggleGroup(grupoPerfil);
         radioMotorista.setToggleGroup(grupoPerfil);
-        radioPassageiro.setSelected(true); // "Passageiro" vem selecionado por padrão
+        radioPassageiro.setSelected(true);
+
+        comboFormaPagamento.getItems().addAll(
+                "PIX", "CARTAO_CREDITO", "CARTAO_DEBITO", "DINHEIRO"
+        );
+
+        // Mostra/oculta painel conforme o perfil selecionado
+        grupoPerfil.selectedToggleProperty().addListener(
+                (obs, antigo, novo) -> atualizarPainelPerfil()
+        );
+
+        // Garante estado inicial correto (passageiro selecionado por padrão)
+        atualizarPainelPerfil();
     }
 
+private void atualizarPainelPerfil() {
+    boolean ehPassageiro = radioPassageiro.isSelected();
+
+    painelPassageiro.setVisible(ehPassageiro);
+    painelPassageiro.setManaged(ehPassageiro);
+    painelMotorista.setVisible(!ehPassageiro);
+    painelMotorista.setManaged(!ehPassageiro);
+
+    if (ehPassageiro) {
+        campoCnh.clear();
+        campoModeloVeiculo.clear();
+        campoPlacaVeiculo.clear();
+    } else {
+        comboFormaPagamento.setValue(null);
+    }
+}
 
     // ── AÇÃO: BOTÃO "CADASTRAR" ───────────────────────────────────────────────
     // Chamado ao clicar no botão de cadastro.
     // Lê os dados do formulário, valida e envia para o banco.
     @FXML
     private void cadastrar() {
-        // Lê os valores dos campos de texto e remove espaços desnecessários
-        String nome  = campoNome.getText().trim();
-        String email = campoEmail.getText().trim();
-        String senha = campoSenha.getText().trim();
+        String nome     = campoNome.getText().trim();
+        String email    = campoEmail.getText().trim();
+        String senha    = campoSenha.getText().trim();
+        String cpf      = campoCpf.getText().trim();
+        String telefone = campoTelefone.getText().trim();
 
-        // Validação 1: todos os campos de texto devem estar preenchidos
-        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
-            mostrar("Preencha todos os campos!", false); // false = estilo de erro
-            return; // Interrompe sem enviar ao banco
+        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()
+                || cpf.isEmpty() || telefone.isEmpty()) {
+            mostrar("Preencha todos os campos!", false);
+            return;
         }
 
-        // Validação 2: senha deve ter no mínimo 4 caracteres
         if (senha.length() < 4) {
             mostrar("Senha deve ter ao menos 4 caracteres.", false);
             return;
         }
 
-        // Lê qual RadioButton está selecionado e converte para o código do banco
-        // Operador ternário: se "radioFeminino" estiver marcado, usa "F"; senão, "M"
-        String genero = radioFeminino.isSelected() ? "F" : "M";
+        String genero;
+        if (radioFeminino.isSelected())             genero = "F";
+        else if (radioNaoEspecificado.isSelected()) genero = "NE";
+        else                                        genero = "M";
 
-        // Mesmo princípio para o perfil de conta
-        String tipo   = radioMotorista.isSelected() ? "MOTORISTA" : "PASSAGEIRO";
+        String tipo = radioMotorista.isSelected() ? "MOTORISTA" : "PASSAGEIRO";
 
-        // Tenta cadastrar no banco de dados (ou MockData)
-        // Retorna true se deu certo, false se o e-mail já existe
-        boolean ok = procedureExecutor.cadastrarUsuario(nome, email, senha, genero, tipo);
+        String formaPagamento = null;
+        String numeroCnh      = null;
+        String modeloVeiculo  = null;
+        String placaVeiculo   = null;
 
-        if (ok) {
-            // Cadastro realizado com sucesso — volta para a tela de login
-            try {
-                App.trocarTela("tela-inicial.fxml");
-            } catch (Exception e) {
-                e.printStackTrace();
+        if ("PASSAGEIRO".equals(tipo)) {
+            formaPagamento = comboFormaPagamento.getValue();
+            if (formaPagamento == null) {
+                mostrar("Selecione a forma de pagamento.", false);
+                return;
             }
         } else {
-            // Falha: e-mail já está cadastrado no sistema
+            numeroCnh    = campoCnh.getText().trim();
+            modeloVeiculo = campoModeloVeiculo.getText().trim();
+            placaVeiculo  = campoPlacaVeiculo.getText().trim();
+
+            if (numeroCnh.isEmpty() || modeloVeiculo.isEmpty() || placaVeiculo.isEmpty()) {
+                mostrar("Preencha todos os dados do veiculo.", false);
+                return;
+            }
+        }
+
+        boolean ok = procedureExecutor.cadastrarUsuario(
+                nome, email, senha, cpf, telefone,
+                genero, tipo,
+                formaPagamento,
+                numeroCnh, modeloVeiculo, placaVeiculo
+        );
+
+        if (ok) {
+            try { App.trocarTela("tela-inicial.fxml"); }
+            catch (Exception e) { e.printStackTrace(); }
+        } else {
             mostrar("E-mail ja cadastrado.", false);
         }
     }
-
-
-    // ── AÇÃO: BOTÃO/LINK "VOLTAR" ─────────────────────────────────────────────
-    // Volta para a tela de login sem realizar nenhum cadastro.
-    @FXML
-    private void voltarLogin() {
-        try {
-            App.trocarTela("tela-inicial.fxml");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    // ── MÉTODO AUXILIAR: EXIBIR MENSAGEM ─────────────────────────────────────
-    // Exibe uma mensagem no label de feedback da tela.
-    // O parâmetro "sucesso" determina o estilo visual:
-    //   true  → estilo de sucesso (texto verde, por exemplo)
-    //   false → estilo de erro (texto vermelho, por exemplo)
-    // Os estilos "mensagem-erro" e "mensagem-sucesso" são definidos no CSS.
-    private void mostrar(String msg, boolean sucesso) {
-        mensagem.setText(msg);
-        // Remove os estilos anteriores para não acumular
-        mensagem.getStyleClass().removeAll("mensagem-erro", "mensagem-sucesso");
-        // Adiciona o estilo correto conforme o tipo da mensagem
-        mensagem.getStyleClass().add(sucesso ? "mensagem-sucesso" : "mensagem-erro");
-        mensagem.setVisible(true); // Garante que o label esteja visível
-    }
-}

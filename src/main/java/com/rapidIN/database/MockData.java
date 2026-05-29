@@ -124,18 +124,23 @@ class MockData {
     // Retorna false se o e-mail já estiver cadastrado.
     // =========================================================================
     static boolean cadastrarUsuario(String nome, String email, String senha,
-                                    String genero, String tipo) {
-        // Verifica se já existe alguém com esse e-mail
+                                    String cpf, String telefone,
+                                    String genero, String tipo,
+                                    String formaPagamento,
+                                    String numeroCnh, String modeloVeiculo,
+                                    String placaVeiculo) {
+
+        // Verifica e-mail duplicado (mock não valida CPF, só e-mail)
         boolean jaExiste = usuarios.stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
-        if (jaExiste) return false; // E-mail duplicado, cadastro recusado
+        if (jaExiste) return false;
 
-        // Cria o novo usuário com um ID sequencial e adiciona à lista
-        // "proximoIdUsuario++" usa o valor atual e depois incrementa
+        // Adiciona o novo usuário na lista em memória
+        // Os campos extras (cpf, telefone, cnh etc.) são ignorados no mock
+        // porque o modelo Usuario ainda não tem esses campos — só o banco real os armazena
         usuarios.add(new Usuario(proximoIdUsuario++, nome, email, genero, tipo, false));
         return true;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: CALCULAR PREÇO
@@ -150,7 +155,6 @@ class MockData {
         // Math.round arredonda para 2 casas decimais
         return Math.round((5.0 + (origem.length() + destino.length()) * 0.25) * 100.0) / 100.0;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: SOLICITAR CORRIDA
