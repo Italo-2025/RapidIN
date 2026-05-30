@@ -41,6 +41,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 public class PainelMotoristaController {
@@ -238,5 +242,38 @@ public class PainelMotoristaController {
     private void atualizarTextoToggle() {
         // Operador ternário: se estiver disponível, exibe "ONLINE"; senão "OFFLINE"
         toggleDisponivel.setText(motorista.isDisponivel() ? "ONLINE" : "OFFLINE");
+    }
+
+
+    // ── AÇÃO: BOTÃO ONLINE/OFFLINE (PROCEDURE) ────────────────────────────────
+    // Chama a procedure proc_alternar_status_motorista para ligar/desligar
+    // a disponibilidade. Bloqueia a troca se o motorista estiver EM_CORRIDA.
+    @FXML
+    private void alternarStatusMotorista() {
+        int motoristaId = SessionManager.getInstance().getUsuario().getId();
+
+        String sql = "{ call proc_alternar_status_motorista(?,?,?) }";
+
+        try (Connection con = Conexao.abrir();
+             CallableStatement cs = con.prepareCall(sql)) {
+
+            cs.setInt(1, motoristaId);                 // IN  - motorista_id
+            cs.registerOutParameter(2, Types.VARCHAR); // OUT - novo_status
+            cs.registerOutParameter(3, Types.VARCHAR); // OUT - mensagem
+
+            cs.execute();
+
+            String novoStatus = cs.getString(2);
+            String mensagem   = cs.getString(3);
+
+            System.out.println("Novo status: " + novoStatus);
+            System.out.println("Mensagem: "    + mensagem);
+
+            // Atualiza o texto do botão toggle conforme o novo status
+            atualizarTextoToggle();
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao alternar status: " + e.getMessage());
+        }
     }
 }
