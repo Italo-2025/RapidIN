@@ -27,11 +27,7 @@ import com.rapidIN.database.procedureExecutor; // Para cadastrar no banco
 
 // Componentes visuais do JavaFX
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;          // Texto estático / mensagens
-import javafx.scene.control.PasswordField;  // Campo de senha (texto oculto)
-import javafx.scene.control.RadioButton;    // Botão de seleção circular (●)
-import javafx.scene.control.TextField;      // Campo de texto livre
-import javafx.scene.control.ToggleGroup;   // Agrupa RadioButtons para permitir só uma seleção
+import javafx.scene.control.*;
 
 public class CadastroController {
 
@@ -41,6 +37,12 @@ public class CadastroController {
     @FXML private TextField campoNome;         // Campo de texto para o nome completo
     @FXML private TextField campoEmail;        // Campo de texto para o e-mail
     @FXML private PasswordField campoSenha;    // Campo de senha (mostra ●●●● enquanto digita)
+    @FXML private TextField campoCpf;
+    @FXML private TextField campoTelefone;
+    @FXML private TextField campoCnh;
+    @FXML private TextField campoModelo;
+    @FXML private TextField campoPlaca;
+    @FXML private ComboBox<String> comboFormaPagamento;
 
     @FXML private RadioButton radioMasculino;  // Opção "Masculino" para gênero
     @FXML private RadioButton radioFeminino;   // Opção "Feminino" para gênero
@@ -49,6 +51,9 @@ public class CadastroController {
     @FXML private RadioButton radioMotorista;  // Opção "Motorista" para tipo de conta
 
     @FXML private Label mensagem;              // Label para exibir erros ou confirmações
+    @FXML private Label labelCnh;
+    @FXML private Label labelModelo;
+    @FXML private Label labelPlaca;
 
 
     // ── GRUPOS DE SELEÇÃO EXCLUSIVA ───────────────────────────────────────────
@@ -77,7 +82,28 @@ public class CadastroController {
         radioPassageiro.setToggleGroup(grupoPerfil);
         radioMotorista.setToggleGroup(grupoPerfil);
         radioPassageiro.setSelected(true); // "Passageiro" vem selecionado por padrão
-    }
+
+        comboFormaPagamento.getItems().addAll(
+                "PIX", "CARTAO_CREDITO", "CARTAO_DEBITO", "DINHEIRO"
+        );
+        comboFormaPagamento.setValue("PIX"); // opção padrão
+
+        radioPassageiro.selectedProperty().addListener((obs, old, novo) -> {
+            boolean motorista = !novo;
+            campoCnh.setVisible(motorista);
+            campoModelo.setVisible(motorista);
+            campoPlaca.setVisible(motorista);
+            labelCnh.setVisible(motorista);
+            labelModelo.setVisible(motorista);
+            labelPlaca.setVisible(motorista);
+        });
+
+        campoCnh.setVisible(false);
+        campoModelo.setVisible(false);
+        campoPlaca.setVisible(false);
+        labelCnh.setVisible(false);
+        labelModelo.setVisible(false);
+        labelPlaca.setVisible(false);    }
 
 
     // ── AÇÃO: BOTÃO "CADASTRAR" ───────────────────────────────────────────────
@@ -89,9 +115,21 @@ public class CadastroController {
         String nome  = campoNome.getText().trim();
         String email = campoEmail.getText().trim();
         String senha = campoSenha.getText().trim();
+        String cpf = campoCpf.getText().trim();
+        String telefone = campoTelefone.getText().trim();
+        String cnh = campoCnh.getText().trim();
+        String modelo = campoModelo.getText().trim();
+        String placa = campoPlaca.getText().trim();
+        String formaPagamento = comboFormaPagamento.getValue();
+
+
 
         // Validação 1: todos os campos de texto devem estar preenchidos
-        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
+        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || cpf.isEmpty() || telefone.isEmpty()) {
+            mostrar("Preencha todos os campos!", false); // false = estilo de erro
+            return; // Interrompe sem enviar ao banco
+        }
+        if (radioMotorista.isSelected() && cnh.isEmpty() || modelo.isEmpty() || placa.isEmpty()) {
             mostrar("Preencha todos os campos!", false); // false = estilo de erro
             return; // Interrompe sem enviar ao banco
         }
@@ -111,7 +149,11 @@ public class CadastroController {
 
         // Tenta cadastrar no banco de dados (ou MockData)
         // Retorna true se deu certo, false se o e-mail já existe
-        boolean ok = procedureExecutor.cadastrarUsuario(nome, email, senha, genero, tipo);
+        boolean ok = procedureExecutor.cadastrarUsuario(
+                nome, email, senha, cpf, telefone,
+                genero, tipo, formaPagamento,
+                cnh, modelo, placa
+        );
 
         if (ok) {
             // Cadastro realizado com sucesso — volta para a tela de login
@@ -124,6 +166,8 @@ public class CadastroController {
             // Falha: e-mail já está cadastrado no sistema
             mostrar("E-mail ja cadastrado.", false);
         }
+
+
     }
 
 

@@ -46,7 +46,7 @@ public class procedureExecutor {
     // false = acessa o banco MySQL real (modo produção)
     //
     // ALTERE PARA false QUANDO O BANCO DE DADOS REAL ESTIVER DISPONÍVEL.
-    public static final boolean MOCK_MODE = true;
+    public static final boolean MOCK_MODE = false;
 
 
     // =========================================================================
@@ -64,7 +64,7 @@ public class procedureExecutor {
         // Modo real: chama a stored procedure no banco de dados
         // O bloco "try-with-resources" garante que o stmt seja fechado
         // automaticamente ao final, mesmo se ocorrer um erro
-        try (CallableStatement stmt = conexao.getConexao().prepareCall("{CALL sp_login_usuario(?, ?)}")) {
+        try (CallableStatement stmt = conexao.getConexao().prepareCall("{CALL proc_login_usuario(?, ?)}")) {
             stmt.setString(1, email); // Substitui o primeiro "?" pelo e-mail
             stmt.setString(2, senha); // Substitui o segundo "?" pela senha
             ResultSet rs = stmt.executeQuery(); // Executa e obtém o resultado
@@ -84,17 +84,26 @@ public class procedureExecutor {
     //
     // Stored procedure chamada: sp_cadastrar_usuario(nome, email, senha, genero, tipo)
     // =========================================================================
-    public static boolean cadastrarUsuario(String nome, String email, String senha,
-                                           String genero, String tipo) {
+    public static boolean cadastrarUsuario(String nome, String email, String senha, String cpf,
+                                           String telefone, String cnh, String modelo,
+                                           String genero, String tipo, String placa, String pagamento) {
         if (MOCK_MODE) return MockData.cadastrarUsuario(nome, email, senha, genero, tipo);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_cadastrar_usuario(?, ?, ?, ?, ?)}")) {
+                .prepareCall("{CALL proc_cadastrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
             stmt.setString(1, nome);
             stmt.setString(2, email);
             stmt.setString(3, senha);
-            stmt.setString(4, genero); // "M" ou "F"
-            stmt.setString(5, tipo);   // "PASSAGEIRO" ou "MOTORISTA"
+            stmt.setString(4, cpf);
+            stmt.setString(5, telefone);
+            stmt.setString(6, genero);
+            stmt.setString(7, tipo);
+            stmt.setString(8, pagamento);
+            stmt.setString(9, cnh);
+            stmt.setString(10, modelo);
+            stmt.setString(11, placa);
+            stmt.registerOutParameter(12, Types.INTEGER);
+            stmt.registerOutParameter(13, Types.VARCHAR);
             stmt.execute();
             return true; // Cadastro realizado com sucesso
         } catch (SQLException e) {
@@ -118,7 +127,7 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.calcularPreco(origem, destino);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_calcular_preco(?, ?, ?)}")) {
+                .prepareCall("{CALL proc_calcular_preco(?, ?, ?)}")) {
             stmt.setString(1, origem);
             stmt.setString(2, destino);
             // Registra o terceiro parâmetro como saída (o banco vai preencher)
@@ -144,12 +153,14 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.solicitarCorrida(idPassageiro, origem, destino);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_solicitar_corrida(?, ?, ?)}")) {
+                .prepareCall("{CALL proc_solicitar_corrida(?, ?, ?, ?, ?)}")) {
             stmt.setInt(1, idPassageiro);
             stmt.setString(2, origem);
             stmt.setString(3, destino);
+            stmt.registerOutParameter(4, Types.INTEGER);
+            stmt.registerOutParameter(5, Types.VARCHAR);
             stmt.execute();
-            return 1; // Sucesso (o banco real poderia retornar o ID gerado)
+            return stmt.getInt(4); // Sucesso (o banco real poderia retornar o ID gerado)
         } catch (SQLException e) {
             System.err.println("Erro ao solicitar corrida: " + e.getMessage());
             return -1; // Indica falha
@@ -169,7 +180,7 @@ public class procedureExecutor {
 
         List<corrida> lista = new ArrayList<>(); // Lista que será retornada
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_corridas_passageiro(?)}")) {
+                .prepareCall("{CALL proc_corridas_passageiro(?)}")) {
             stmt.setInt(1, idPassageiro);
             ResultSet rs = stmt.executeQuery();
             // "while (rs.next())" percorre cada linha retornada pelo banco
@@ -192,7 +203,7 @@ public class procedureExecutor {
 
         List<corrida> lista = new ArrayList<>();
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_corridas_motorista(?)}")) {
+                .prepareCall("{CALL proc_corridas_motorista(?)}")) {
             stmt.setInt(1, idMotorista);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) lista.add(mapearCorrida(rs));
@@ -216,7 +227,7 @@ public class procedureExecutor {
 
         List<corrida> lista = new ArrayList<>();
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_corridas_disponiveis(?)}")) {
+                .prepareCall("{CALL proc_corridas_disponiveis(?)}")) {
             stmt.setString(1, generoMotorista); // "M" ou "F"
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) lista.add(mapearCorrida(rs));
@@ -239,7 +250,7 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.aceitarCorrida(idCorrida, idMotorista);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_aceitar_corrida(?, ?)}")) {
+                .prepareCall("{CALL proc_aceitar_corrida(?, ?)}")) {
             stmt.setInt(1, idCorrida);
             stmt.setInt(2, idMotorista);
             stmt.execute();
@@ -263,7 +274,7 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.recusarCorrida(idCorrida);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_recusar_corrida(?)}")) {
+                .prepareCall("{CALL proc_cancelar_corrida(?)}")) {
             stmt.setInt(1, idCorrida);
             stmt.execute();
             return true;
@@ -287,7 +298,7 @@ public class procedureExecutor {
             return;
         }
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_atualizar_disponibilidade(?, ?)}")) {
+                .prepareCall("{CALL proc_alternar_status_motorista(?, ?)}")) {
             stmt.setInt(1, idMotorista);
             stmt.setBoolean(2, disponivel); // true = online, false = offline
             stmt.execute();
