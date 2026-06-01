@@ -996,18 +996,23 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS proc_login_usuario$$
 
 CREATE PROCEDURE proc_login_usuario(
-    IN email VARCHAR (100),
-    IN senha_hash VARCHAR (255)
+    IN p_email VARCHAR (100),
+    IN p_senha_hash VARCHAR (255)
 )
 BEGIN
-    SELECT
-        id AS usuario_id,
-        nome,
-        email,
-        genero,
-        tipo_usuario AS tipo,
-        ativo AS disponivel
-    FROM usuarios WHERE email =p.email AND senha_hash = p.senha_hash ANF ativo = TRUE;
+SELECT
+    u.id            AS id_usuario,
+    u.nome,
+    u.email,
+    u.genero,
+    u.tipo_usuario  AS tipo,
+    u.ativo         AS disponivel,
+    m.id            AS id_motorista
+FROM usuarios u
+         LEFT JOIN motoristas m ON m.usuario_id = u.id
+WHERE u.email = p_email
+  AND u.senha_hash = p_senha_hash
+  AND u.ativo = TRUE
     LIMIT 1;
 END$$
 
@@ -1017,7 +1022,7 @@ DROP PROCEDURE IF EXISTS proc_solicitar_corrida$$
 CREATE PROCEDURE proc_solicitar_corrida(
     IN p_passageiro_id INT,
     IN p_origem VARCHAR(150),
-    IN p_destino VARCHAR(150)
+    IN p_destino VARCHAR(150),
     OUT p_corrida_id INT,
     OUT p_mensagem VARCHAR(100)
 )
@@ -1026,19 +1031,21 @@ BEGIN
     DECLARE v_destino_id INT;
 
     INSERT INTO enderecos (usuario_id, logradouro, cidade,latitude, longitude)
-    VALUES (p_passageiro_id, p_origem, 'nao informada', 00, 00)
+    VALUES (p_passageiro_id, p_origem, 'nao informada', 00, 00);
     SET v_origem_id = LAST_INSERT_ID();
 
     INSERT INTO enderecos (usuario_id, logradouro, cidade,latitude, longitude)
-    VALUES (p_passageiro_id, p_destino, 'nao informada', 00, 00)
+    VALUES (p_passageiro_id, p_destino, 'nao informada', 00, 00);
     SET v_destino_id = LAST_INSERT_ID();
 
     INSERT INTO corridas (passageiro_id, origem_endereco_id, destino_endereco_id)
-    VALUES (p_passageiro_id, v_origem_id, v_destino_id)
+    VALUES (p_passageiro_id, v_origem_id, v_destino_id);
 
     SET p_corrida_id = LAST_INSERT_ID();
     SET p_mensagem = 'Corrida solicitada com sucesso!';
 END$$
+
+DELIMITER $$
 
 DROP PROCEDURE IF EXISTS proc_corridas_disponiveis$$
 
@@ -1065,6 +1072,77 @@ CREATE PROCEDURE proc_corridas_disponiveis(
              JOIN enderecos eo   ON eo.id      = c.origem_endereco_id
              JOIN enderecos ed   ON ed.id      = c.destino_endereco_id
     WHERE c.status = 'SOLICITADA'
-      AND (p_genero_motorista != 'F' OR up.genero = 'F');
-DELIMITER;
+      AND (up.genero != 'F' OR p_genero_motorista = 'F');
+END$$
 
+DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_corridas_passageiro$$
+
+CREATE PROCEDURE proc_corridas_passageiro(
+    IN p_passageiro_id INT
+)
+BEGIN
+SELECT
+    c.id                AS id_corrida,
+    eo.logradouro       AS origem,
+    ed.logradouro       AS destino,
+    c.status,
+    c.preco,
+    c.passageiro_id     AS id_passageiro,
+    c.motorista_id      AS id_motorista,
+    up.nome             AS nome_passageiro,
+    um.nome             AS nome_motorista,
+    up.genero           AS genero_passageiro
+FROM corridas c
+         JOIN passageiros p  ON p.id       = c.passageiro_id
+         JOIN usuarios up    ON up.id      = p.usuario_id
+         LEFT JOIN motoristas m  ON m.id   = c.motorista_id
+         LEFT JOIN usuarios um   ON um.id  = m.usuario_id
+         JOIN enderecos eo   ON eo.id      = c.origem_endereco_id
+         JOIN enderecos ed   ON ed.id      = c.destino_endereco_id
+WHERE c.passageiro_id = p_passageiro_id;
+END$$
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS proc_calcular_preco$$
+
+CREATE PROCEDURE proc_calcular_preco(
+    IN p_origem VARCHAR(255),
+    IN p_destino VARCHAR(255),
+    OUT p_preco DECIMAL(10,2)
+)
+BEGIN
+    SET p_preco = ROUND(5 + (RAND() * 40), 2);
+END$$
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_corridas_motorista$$
+
+CREATE PROCEDURE proc_corridas_motorista(
+    IN p_motorista_id INT
+)
+BEGIN
+SELECT
+    c.id                AS id_corrida,
+    eo.logradouro       AS origem,
+    ed.logradouro       AS destino,
+    c.status,
+    c.preco,
+    c.passageiro_id     AS id_passageiro,
+    c.motorista_id      AS id_motorista,
+    up.nome             AS nome_passageiro,
+    um.nome             AS nome_motorista,
+    up.genero           AS genero_passageiro
+FROM corridas c
+         JOIN passageiros p  ON p.id       = c.passageiro_id
+         JOIN usuarios up    ON up.id      = p.usuario_id
+         LEFT JOIN motoristas m  ON m.id   = c.motorista_id
+         LEFT JOIN usuarios um   ON um.id  = m.usuario_id
+         JOIN enderecos eo   ON eo.id      = c.origem_endereco_id
+         JOIN enderecos ed   ON ed.id      = c.destino_endereco_id
+WHERE c.motorista_id = p_motorista_id;
+
+END$$
+
+DELIMITER ;

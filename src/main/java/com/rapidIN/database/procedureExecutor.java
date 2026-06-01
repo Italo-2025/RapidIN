@@ -35,6 +35,7 @@ package com.rapidIN.database;
 import com.rapidIN.model.corrida;   // Modelo de dados de uma corrida
 import com.rapidIN.model.Usuario;   // Modelo de dados de um usuário
 
+import java.math.BigDecimal;
 import java.sql.*;                  // Tudo necessário para SQL: Connection, ResultSet etc.
 import java.util.ArrayList;        // Lista dinâmica (cresce conforme adicionamos itens)
 import java.util.List;             // Interface de lista (mais genérica)
@@ -250,9 +251,10 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.aceitarCorrida(idCorrida, idMotorista);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL proc_aceitar_corrida(?, ?)}")) {
+                .prepareCall("{CALL proc_aceitar_corrida(?, ?, ?)}")) {
             stmt.setInt(1, idCorrida);
             stmt.setInt(2, idMotorista);
+            stmt.registerOutParameter(3, Types.VARCHAR);
             stmt.execute();
             return true;
         } catch (SQLException e) {
@@ -293,20 +295,100 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_atualizar_disponibilidade(id_motorista, disponivel)
     // =========================================================================
     public static void atualizarDisponibilidade(int idMotorista, boolean disponivel) {
-        if (MOCK_MODE) {
-            MockData.atualizarDisponibilidade(idMotorista, disponivel);
-            return;
-        }
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL proc_alternar_status_motorista(?, ?)}")) {
+                .prepareCall("{CALL proc_alternar_status_motorista(?, ?, ?)}")) {
             stmt.setInt(1, idMotorista);
-            stmt.setBoolean(2, disponivel); // true = online, false = offline
+            stmt.registerOutParameter(2, Types.VARCHAR);
+            stmt.registerOutParameter(3, Types.VARCHAR);
             stmt.execute();
         } catch (SQLException e) {
-            System.err.println("Erro ao atualizar disponibilidade: " + e.getMessage());
+            System.err.println("Erro ao alternar status: " + e.getMessage());
         }
     }
 
+    public static boolean iniciarCorrida(int idCorrida, int idMotorista) {
+
+            try (CallableStatement stmt = conexao.getConexao()
+                    .prepareCall("{CALL proc_iniciar_corrida(?, ?, ?)}")) {
+                stmt.setInt(1, idCorrida);
+                stmt.setInt(2, idMotorista);
+                stmt.registerOutParameter(3, Types.VARCHAR);
+                stmt.execute();
+                return true;
+            } catch (SQLException e) {
+                System.err.println("Erro ao iniciar corrida: " + e.getMessage());
+                return false;
+        }
+    }
+
+    public static boolean finalizarCorrida(int idCorrida, int idMotorista, double preco, double distancia_km) {
+
+        try (CallableStatement stmt = conexao.getConexao()
+                .prepareCall("{CALL proc_finalizar_corrida(?, ?, ?, ?, ?)}")) {
+            stmt.setInt(1, idCorrida);
+            stmt.setInt(2, idMotorista);
+            stmt.setBigDecimal(3,new BigDecimal(preco));
+            stmt.setBigDecimal(4, new BigDecimal(distancia_km));
+            stmt.registerOutParameter(5, Types.VARCHAR);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Erro ao finalizar corrida: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean cancelarCorrida(int idCorrida, String canceladoPor, int atorId) {
+        try (CallableStatement stmt = conexao.getConexao()
+                .prepareCall("{CALL proc_cancelar_corrida(?, ?, ?, ?)}")) {
+            stmt.setInt(1, idCorrida);
+            stmt.setString(2, canceladoPor);
+            stmt.setInt(3, atorId);
+            stmt.registerOutParameter(4, Types.VARCHAR);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Erro ao cancelar corrida: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static ResultSet estatisticasMotorista(int idMotorista) {
+        try {
+            CallableStatement stmt = conexao.getConexao()
+                    .prepareCall("{CALL proc_estatisticas_motorista(?)}");
+            stmt.setInt(1, idMotorista);
+            return stmt.executeQuery();
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar estatisticas: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static ResultSet estatisticasPassageiro(int idPassageiro) {
+        try {
+            CallableStatement stmt = conexao.getConexao()
+                    .prepareCall("{CALL proc_estatisticas_passageiro(?)}");
+            stmt.setInt(1, idPassageiro);
+            return stmt.executeQuery();
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar estatisticas: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static boolean desativarUsuario(int idUsuario) {
+        try (CallableStatement stmt = conexao.getConexao()
+                .prepareCall("{CALL proc_desativar_usuario(?, ?)}")) {
+            stmt.setInt(1, idUsuario);
+            stmt.registerOutParameter(2, Types.VARCHAR);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Erro ao desativar usuario: " + e.getMessage());
+            return false;
+        }
+    }
 
     // =========================================================================
     // MÉTODOS AUXILIARES DE MAPEAMENTO
@@ -330,6 +412,7 @@ public class procedureExecutor {
         u.setGenero(rs.getString("genero"));      // Lê a coluna "genero" ("M" ou "F")
         u.setTipo(rs.getString("tipo"));          // Lê a coluna "tipo" ("PASSAGEIRO" ou "MOTORISTA")
         u.setDisponivel(rs.getBoolean("disponivel")); // Lê a coluna "disponivel"
+        u.setIdMotorista(rs.getInt("id_motorista"));
         return u;
     }
 
