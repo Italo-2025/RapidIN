@@ -83,6 +83,9 @@
                     <Button text="Atualizar"
                             onAction="#carregarHistorico"
                             styleClass="botao-secundario"/>
+
+                    <Button text="Avaliar Corrida"
+                            styleClass="botao-primario"/>
                 </HBox>
 
                 <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS">

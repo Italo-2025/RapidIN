@@ -390,6 +390,23 @@ public class procedureExecutor {
         }
     }
 
+    public static boolean avaliarCorrida(int idCorrida, int avaliadorId, int avaliadoId, int nota, String comentario) {
+        try (CallableStatement stmt = conexao.getConexao()
+                .prepareCall("{CALL proc_avaliar_corrida(?, ?, ?, ?, ?, ?)}")) {
+            stmt.setInt(1, idCorrida);
+            stmt.setInt(2, avaliadorId);
+            stmt.setInt(3, avaliadoId);
+            stmt.setInt(4, nota);
+            stmt.setString(5, comentario);
+            stmt.registerOutParameter(6, Types.VARCHAR);
+            stmt.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Erro ao avaliar corrida: " + e.getMessage());
+            return false;
+        }
+    }
+
     // =========================================================================
     // MÉTODOS AUXILIARES DE MAPEAMENTO
     // Estes métodos convertem uma linha de resultado do banco (ResultSet)

@@ -79,6 +79,10 @@
                     <Button text="Finalizar Corrida"
                             onAction="#finalizarCorrida"
                             styleClass="botao-secundario"/>
+
+                    <Button text="Avaliar Corrida"
+                            styleClass="botao-primario"/>
+
                 </HBox>
 
                 <TableView fx:id="tabelaHistoricoMotorista" VBox.vgrow="ALWAYS">
