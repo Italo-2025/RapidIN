@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    SolicitarCorrida.fxml
+    Interface da tela "Solicitar Corrida" do RapDin.
+
+    Como ligar ao controller:
+      - fx:controller aponta para a classe SolicitarCorridaController
+      - Cada fx:id liga o elemento ao @FXML do controller
+      - onAction="#handleSolicitarCorrida" chama o metodo do controller
+
+    Para abrir no SceneBuilder: File > Open > selecione este arquivo.
+    Para usar no codigo Java:
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/rapdin/view/SolicitarCorrida.fxml"));
+        Parent root = loader.load();
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox
+    xmlns:fx="http://javafx.com/fxml"
+    fx:controller="rapdin.controller.SolicitarCorridaController"
+    spacing="12"
+    style="-fx-padding: 30; -fx-background-color: #f9f9f9;"
+    prefWidth="400">
+
+    <!-- Titulo -->
+    <Label text="🚗 RapDin — Solicitar Corrida"
+           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #6b21a8;" />
+
+    <!-- Campo: ID do Passageiro -->
+    <Label text="ID do Passageiro:" />
+    <TextField fx:id="campoPassageiroId" promptText="Ex: 1" />
+
+    <!-- Campo: ID do Endereco de Origem -->
+    <Label text="ID do Endereço de Origem:" />
+    <TextField fx:id="campoOrigemId" promptText="Ex: 1" />
+
+    <!-- Campo: ID do Endereco de Destino -->
+    <Label text="ID do Endereço de Destino:" />
+    <TextField fx:id="campoDestinoId" promptText="Ex: 2" />
+
+    <!-- Botao que chama handleSolicitarCorrida() no controller -->
+    <Button text="Solicitar Corrida"
+            onAction="#handleSolicitarCorrida"
+            maxWidth="Infinity"
+            style="-fx-background-color: #6b21a8; -fx-text-fill: white;
+                   -fx-font-size: 14px; -fx-padding: 10 0 10 0; -fx-cursor: hand;" />
+
+    <!-- Label de resultado (verde = sucesso, vermelho = erro) -->
+    <!-- O controller altera o texto e a cor via labelResultado.setText / setStyle -->
+    <Label fx:id="labelResultado"
+           wrapText="true"
+           style="-fx-font-size: 13px;" />
+
+</VBox>
