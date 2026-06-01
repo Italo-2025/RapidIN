@@ -129,7 +129,7 @@ public class CadastroController {
             mostrar("Preencha todos os campos!", false); // false = estilo de erro
             return; // Interrompe sem enviar ao banco
         }
-        if (radioMotorista.isSelected() && cnh.isEmpty() || modelo.isEmpty() || placa.isEmpty()) {
+        if (radioMotorista.isSelected() && (cnh.isEmpty() || modelo.isEmpty() || placa.isEmpty())) {
             mostrar("Preencha todos os campos!", false); // false = estilo de erro
             return; // Interrompe sem enviar ao banco
         }

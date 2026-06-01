@@ -276,7 +276,7 @@ public class PainelMotoristaController {
         }
 
         // Recusa a corrida no banco — muda status para CANCELADA
-        procedureExecutor.recusarCorrida(selecionada.getId());
+        procedureExecutor.recusarCorrida(selecionada.getId(), motorista.getIdMotorista());
         labelAcaoStatus.setText("Corrida recusada.");
 
         // Atualiza a tabela de disponíveis (a corrida recusada some da lista)

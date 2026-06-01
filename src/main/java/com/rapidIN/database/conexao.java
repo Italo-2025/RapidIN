@@ -51,7 +51,7 @@ public class conexao {
     private static final String USUARIO = "root";
 
     // SENHA: senha do usuário do banco de dados
-    private static final String SENHA   = "ItaloIsis2009";
+    private static final String SENHA   = "CBO*579c";
 
     // ── ESTADO INTERNO ────────────────────────────────────────────────────────
     // Guarda a conexão ativa. Começa nula (sem conexão).

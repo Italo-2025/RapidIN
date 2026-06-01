@@ -36,6 +36,9 @@ import com.rapidIN.model.corrida;   // Modelo de dados de uma corrida
 import com.rapidIN.model.Usuario;   // Modelo de dados de um usuário
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;                  // Tudo necessário para SQL: Connection, ResultSet etc.
 import java.util.ArrayList;        // Lista dinâmica (cresce conforme adicionamos itens)
 import java.util.List;             // Interface de lista (mais genérica)
@@ -66,8 +69,8 @@ public class procedureExecutor {
         // O bloco "try-with-resources" garante que o stmt seja fechado
         // automaticamente ao final, mesmo se ocorrer um erro
         try (CallableStatement stmt = conexao.getConexao().prepareCall("{CALL proc_login_usuario(?, ?)}")) {
-            stmt.setString(1, email); // Substitui o primeiro "?" pelo e-mail
-            stmt.setString(2, senha); // Substitui o segundo "?" pela senha
+            stmt.setString(1, email);
+            stmt.setString(2, hashSenha(senha));
             ResultSet rs = stmt.executeQuery(); // Executa e obtém o resultado
             if (rs.next()) return mapearUsuario(rs); // Se encontrou, converte para Usuario
         } catch (SQLException e) {
@@ -86,15 +89,15 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_cadastrar_usuario(nome, email, senha, genero, tipo)
     // =========================================================================
     public static boolean cadastrarUsuario(String nome, String email, String senha, String cpf,
-                                           String telefone, String cnh, String modelo,
-                                           String genero, String tipo, String placa, String pagamento) {
+                                           String telefone, String genero, String tipo, String pagamento,
+                                           String cnh, String modelo, String placa) {
         if (MOCK_MODE) return MockData.cadastrarUsuario(nome, email, senha, genero, tipo);
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL proc_cadastrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
             stmt.setString(1, nome);
             stmt.setString(2, email);
-            stmt.setString(3, senha);
+            stmt.setString(3, hashSenha(senha));
             stmt.setString(4, cpf);
             stmt.setString(5, telefone);
             stmt.setString(6, genero);
@@ -106,10 +109,16 @@ public class procedureExecutor {
             stmt.registerOutParameter(12, Types.INTEGER);
             stmt.registerOutParameter(13, Types.VARCHAR);
             stmt.execute();
-            return true; // Cadastro realizado com sucesso
+            // p_novo_usuario_id = null/0 significa que a procedure rejeitou (email ou CPF duplicado)
+            int novoId = stmt.getInt(12);
+            if (stmt.wasNull() || novoId <= 0) {
+                System.err.println("Cadastro rejeitado: " + stmt.getString(13));
+                return false;
+            }
+            return true;
         } catch (SQLException e) {
             System.err.println("Erro ao cadastrar: " + e.getMessage());
-            return false; // Falha no cadastro
+            return false;
         }
     }
 
@@ -272,12 +281,15 @@ public class procedureExecutor {
     //
     // Stored procedure chamada: sp_recusar_corrida(id_corrida)
     // =========================================================================
-    public static boolean recusarCorrida(int idCorrida) {
+    public static boolean recusarCorrida(int idCorrida, int idMotorista) {
         if (MOCK_MODE) return MockData.recusarCorrida(idCorrida);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL proc_cancelar_corrida(?)}")) {
+                .prepareCall("{CALL proc_cancelar_corrida(?, ?, ?, ?)}")) {
             stmt.setInt(1, idCorrida);
+            stmt.setString(2, "MOTORISTA");
+            stmt.setInt(3, idMotorista);
+            stmt.registerOutParameter(4, Types.VARCHAR);
             stmt.execute();
             return true;
         } catch (SQLException e) {
@@ -418,6 +430,20 @@ public class procedureExecutor {
     //   Os métodos abaixo leem coluna por coluna e montam o objeto Java
     //   correspondente.
     // =========================================================================
+
+    // Gera o hash SHA-256 da senha antes de enviar ao banco.
+    // O banco armazena apenas o hash — nunca a senha em texto puro.
+    private static String hashSenha(String senha) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(senha.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 nao disponivel", e);
+        }
+    }
 
     // Converte uma linha do ResultSet em um objeto Usuario
     // Usado após chamar sp_login_usuario

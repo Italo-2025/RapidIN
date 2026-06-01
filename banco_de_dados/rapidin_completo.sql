@@ -855,18 +855,18 @@ CREATE INDEX idx_corridas_motorista ON corridas(motorista_id);
 -- DADOS DE TESTE
 -- ###################################################################
 
--- usuarios
+-- usuarios (senha de todos: 123456 | SHA-256: 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92)
 INSERT INTO usuarios (nome, email, senha_hash, cpf, telefone, genero, tipo_usuario, data_nascimento) VALUES
-                                                                                                         ('Ana Silva',      'ana.silva@email.com',      '$2y$10$fakehash', '111.111.111-11', '11999991111', 'F',  'PASSAGEIRO', '1995-03-15'),
-                                                                                                         ('Beatriz Costa',  'beatriz.costa@email.com',  '$2y$10$fakehash', '222.222.222-22', '11999992222', 'F',  'PASSAGEIRO', '1998-07-22'),
-                                                                                                         ('Carlos Mendes',  'carlos.mendes@email.com',  '$2y$10$fakehash', '333.333.333-33', '11999993333', 'M',  'PASSAGEIRO', '1990-05-20'),
-                                                                                                         ('Diego Rocha',    'diego.rocha@email.com',    '$2y$10$fakehash', '444.444.444-44', '11999994444', 'M',  'PASSAGEIRO', '1993-09-30'),
-                                                                                                         ('Alex Oliveira',  'alex.oliveira@email.com',  '$2y$10$fakehash', '555.555.555-55', '11999995555', 'NE', 'PASSAGEIRO', '1997-02-14'),
-                                                                                                         ('Fernanda Lima',  'fernanda.lima@email.com',  '$2y$10$fakehash', '666.666.666-66', '11999996666', 'F',  'MOTORISTA',  '1985-04-25'),
-                                                                                                         ('Gabriela Souza', 'gabriela.souza@email.com', '$2y$10$fakehash', '777.777.777-77', '11999997777', 'F',  'MOTORISTA',  '1988-08-12'),
-                                                                                                         ('Henrique Dias',  'henrique.dias@email.com',  '$2y$10$fakehash', '888.888.888-88', '11999998888', 'M',  'MOTORISTA',  '1982-12-05'),
-                                                                                                         ('Igor Martins',   'igor.martins@email.com',   '$2y$10$fakehash', '999.999.999-99', '11999999999', 'M',  'MOTORISTA',  '1987-06-18'),
-                                                                                                         ('Jordan Santos',  'jordan.santos@email.com',  '$2y$10$fakehash', '000.000.000-00', '11999990000', 'NE', 'MOTORISTA',  '1991-10-08');
+    ('Ana Silva',      'ana.silva@email.com',      '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '111.111.111-11', '11999991111', 'F',  'PASSAGEIRO', '1995-03-15'),
+    ('Beatriz Costa',  'beatriz.costa@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '222.222.222-22', '11999992222', 'F',  'PASSAGEIRO', '1998-07-22'),
+    ('Carlos Mendes',  'carlos.mendes@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '333.333.333-33', '11999993333', 'M',  'PASSAGEIRO', '1990-05-20'),
+    ('Diego Rocha',    'diego.rocha@email.com',    '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '444.444.444-44', '11999994444', 'M',  'PASSAGEIRO', '1993-09-30'),
+    ('Alex Oliveira',  'alex.oliveira@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '555.555.555-55', '11999995555', 'NE', 'PASSAGEIRO', '1997-02-14'),
+    ('Fernanda Lima',  'fernanda.lima@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '666.666.666-66', '11999996666', 'F',  'MOTORISTA',  '1985-04-25'),
+    ('Gabriela Souza', 'gabriela.souza@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '777.777.777-77', '11999997777', 'F',  'MOTORISTA',  '1988-08-12'),
+    ('Henrique Dias',  'henrique.dias@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '888.888.888-88', '11999998888', 'M',  'MOTORISTA',  '1982-12-05'),
+    ('Igor Martins',   'igor.martins@email.com',   '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '999.999.999-99', '11999999999', 'M',  'MOTORISTA',  '1987-06-18'),
+    ('Jordan Santos',  'jordan.santos@email.com',  '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '000.000.000-00', '11999990000', 'NE', 'MOTORISTA',  '1991-10-08');
 
 -- passageiros (usuarios 1 a 5)
 INSERT INTO passageiros (usuario_id, forma_pagamento) VALUES
@@ -909,83 +909,6 @@ INSERT INTO corridas (passageiro_id, motorista_id, origem_endereco_id, destino_e
     (2, NULL, 3, 1, 'SEM_MOTORISTA_FEMININA', NOW() - INTERVAL 30 MINUTE);
 
 
--- ###################################################################
--- TESTES (roda depois pra ver se ta tudo certo)
--- ###################################################################
-
--- login: busca a Ana pra conferir senha
-SELECT id, senha_hash, genero, tipo_usuario, ativo
-FROM usuarios WHERE email = 'ana.silva@email.com';
-
--- regra feminina: Ana (passageira F) pede corrida -> tem que vir motorista F
-CALL proc_solicitar_corrida(1, 1, 2, @corrida, @situacao);
-SELECT @corrida AS corrida_criada, @situacao AS situacao;
-
--- passageiro homem pede corrida -> qualquer motorista
-CALL proc_solicitar_corrida(3, 4, 5, @corrida, @situacao);
-SELECT @corrida AS corrida_criada, @situacao AS situacao;
-
--- ve as motoristas mulheres online (tem que aparecer Fernanda e Gabriela)
-SELECT * FROM visao_motoristas_femininas_online;
-
--- historico completo
-SELECT * FROM visao_historico_corridas ORDER BY solicitada_em DESC;
-
-
--- ===================================================================
--- TESTE DO CICLO DE VIDA DA CORRIDA (usando as procedures)
--- mostra todas as triggers funcionando: log de status, mudanca de
--- status do motorista (EM_CORRIDA / ONLINE) e calculo da nota media
--- ===================================================================
-
--- pega os ids primeiro (Ana = passageiro 1, Fernanda = motorista 1)
-SET @passageiro_id := (SELECT id FROM passageiros WHERE usuario_id = 1);
-SET @motorista_id  := (SELECT id FROM motoristas  WHERE usuario_id = 6);
-SET @origem_id     := (SELECT id FROM enderecos   WHERE usuario_id = 1 LIMIT 1);
-SET @destino_id    := (SELECT id FROM enderecos   WHERE usuario_id = 1 LIMIT 1 OFFSET 1);
-
--- 1) passageira solicita (regra feminina escolhe motorista F)
-CALL proc_solicitar_corrida(@passageiro_id, @origem_id, @destino_id, @corrida_id, @situacao);
-SELECT 'APOS SOLICITAR' AS etapa, @corrida_id AS corrida, @situacao AS situacao;
-SELECT 'LOGS APOS SOLICITAR' AS etapa FROM logs_status_corrida WHERE corrida_id = @corrida_id;
-
--- garante motorista designado pra continuar o teste do ciclo
-CALL proc_atribuir_motorista(@corrida_id, @msg);
-SELECT 'ATRIBUIR' AS etapa, @msg AS mensagem;
-
--- 2) motorista aceita
-CALL proc_aceitar_corrida(@corrida_id, @motorista_id, @msg);
-SELECT 'APOS ACEITAR' AS etapa, @msg AS mensagem;
-SELECT 'MOTORISTA APOS ACEITAR' AS etapa, status_online FROM motoristas WHERE id = @motorista_id;
-SELECT 'LOGS APOS ACEITAR' AS etapa, * FROM logs_status_corrida WHERE corrida_id = @corrida_id;
-
--- 3) motorista inicia
-CALL proc_iniciar_corrida(@corrida_id, @motorista_id, @msg);
-SELECT 'APOS INICIAR' AS etapa, @msg AS mensagem;
-SELECT 'LOGS APOS INICIAR' AS etapa, * FROM logs_status_corrida WHERE corrida_id = @corrida_id;
-
--- 4) motorista finaliza
-CALL proc_finalizar_corrida(@corrida_id, @motorista_id, 25.50, 8.300, @msg);
-SELECT 'APOS FINALIZAR' AS etapa, @msg AS mensagem;
-SELECT 'MOTORISTA APOS FINALIZAR' AS etapa, status_online FROM motoristas WHERE id = @motorista_id;
-SELECT 'LOGS COMPLETOS' AS etapa, * FROM logs_status_corrida WHERE corrida_id = @corrida_id ORDER BY id;
-
--- 5) avaliacoes (passageiro avalia motorista e vice-versa)
-CALL proc_avaliar_corrida(@corrida_id, 1, 6, 5, 'Motorista muito atenciosa', @msg);
-SELECT 'AVALIACAO 1' AS etapa, @msg AS mensagem;
-CALL proc_avaliar_corrida(@corrida_id, 6, 1, 5, 'Passageira tranquila', @msg);
-SELECT 'AVALIACAO 2' AS etapa, @msg AS mensagem;
-
-SELECT 'MEDIA DA MOTORISTA' AS etapa, nota_media FROM motoristas WHERE id = @motorista_id;
-
--- 6) corrida final completa
-SELECT 'CORRIDA FINAL' AS etapa, id, status, aceita_em, iniciada_em, encerrada_em, preco
-FROM corridas WHERE id = @corrida_id;
-
--- 7) estatisticas
-CALL proc_estatisticas_motorista(@motorista_id);
-CALL proc_estatisticas_passageiro(@passageiro_id);
-
 -- ---------------------------------------------------------------
 -- PROCEDURES COMPLEMENTARES
 -- Criadas para alinhar com o procedureExecutor.java
@@ -1006,7 +929,7 @@ SELECT
     u.email,
     u.genero,
     u.tipo_usuario  AS tipo,
-    u.ativo         AS disponivel,
+    CASE WHEN m.status_online = 'ONLINE' THEN 1 ELSE 0 END AS disponivel,
     m.id            AS id_motorista
 FROM usuarios u
          LEFT JOIN motoristas m ON m.usuario_id = u.id
