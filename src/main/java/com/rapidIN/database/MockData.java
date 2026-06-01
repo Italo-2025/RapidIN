@@ -255,7 +255,21 @@ class MockData {
         }
         return false; // Corrida não encontrada ou já foi aceita por outro motorista
     }
-
+    // =========================================================================
+// SIMULAÇÃO: INICIAR CORRIDA
+// Muda o status da corrida de ACEITA para EM_ANDAMENTO.
+// Só inicia corridas com status ACEITA.
+// Retorna true se conseguiu iniciar, false caso contrário.
+// =========================================================================
+    static boolean iniciarCorrida(int idCorrida, int idMotorista) {
+        for (corrida c : corridas) {
+            if (c.getId() == idCorrida && "ACEITA".equals(c.getStatus())) {
+                c.setStatus("EM_ANDAMENTO");
+                return true;
+            }
+        }
+        return false;
+    }
 
     // =========================================================================
     // SIMULAÇÃO: RECUSAR CORRIDA

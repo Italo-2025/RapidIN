@@ -228,24 +228,24 @@ public class procedureExecutor {
 
 
     // =========================================================================
-    // OPERAÇÃO: ACEITAR CORRIDA
+    // OPERAÇÃO: INICIAR CORRIDA
     // Motorista aceita uma corrida disponível.
     // Vincula o motorista à corrida e muda o status para EM_ANDAMENTO.
     // Retorna true em caso de sucesso.
     //
     // Stored procedure chamada: sp_aceitar_corrida(id_corrida, id_motorista)
     // =========================================================================
-    public static boolean aceitarCorrida(int idCorrida, int idMotorista) {
-        if (MOCK_MODE) return MockData.aceitarCorrida(idCorrida, idMotorista);
+    public static boolean iniciarCorrida (int idCorrida, int idMotorista) {
+        if (MOCK_MODE) return MockData.iniciarCorrida(idCorrida, idMotorista);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL sp_aceitar_corrida(?, ?)}")) {
+                .prepareCall("{CALL proc_iniciar-corrida(?, ?)}")) {
             stmt.setInt(1, idCorrida);
             stmt.setInt(2, idMotorista);
             stmt.execute();
             return true;
         } catch (SQLException e) {
-            System.err.println("Erro ao aceitar corrida: " + e.getMessage());
+            System.err.println("Erro ao iniciar corrida: " + e.getMessage());
             return false;
         }
     }

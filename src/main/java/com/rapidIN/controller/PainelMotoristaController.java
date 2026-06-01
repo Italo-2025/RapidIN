@@ -171,7 +171,7 @@ public class PainelMotoristaController {
         // Tenta aceitar a corrida no banco de dados
         // Retorna false se a corrida já foi aceita por outro motorista entre
         // o carregamento da lista e o clique (condição de corrida)
-        boolean ok = procedureExecutor.aceitarCorrida(selecionada.getId(), motorista.getId());
+        boolean ok = procedureExecutor.iniciarCorrida (selecionada.getId(), motorista.getId());
 
         if (ok) {
             // Aceito com sucesso — informa o endereço de origem para o motorista ir buscar
@@ -186,6 +186,27 @@ public class PainelMotoristaController {
         }
     }
 
+    // ── AÇÃO: BOTÃO "INICIAR CORRIDA" ─────────────────────────────────────────
+// Inicia a corrida aceita, mudando o status para EM_ANDAMENTO.
+    @FXML
+    private void iniciarCorrida() {
+        corrida selecionada = tabelaDisponiveis.getSelectionModel().getSelectedItem();
+
+        if (selecionada == null) {
+            labelAcaoStatus.setText("Selecione uma corrida na tabela.");
+            return;
+        }
+
+        boolean ok = procedureExecutor.iniciarCorrida(selecionada.getId(), motorista.getId());
+
+        if (ok) {
+            labelAcaoStatus.setText("Corrida iniciada! Boa viagem.");
+            carregarCorridasDisponiveis();
+            carregarHistorico();
+        } else {
+            labelAcaoStatus.setText("Nao foi possivel iniciar. A corrida precisa estar ACEITA.");
+        }
+    }
 
     // ── AÇÃO: BOTÃO "RECUSAR CORRIDA" ─────────────────────────────────────────
     // Cancela a corrida selecionada (muda status para CANCELADA).

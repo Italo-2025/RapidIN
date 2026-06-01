@@ -51,6 +51,9 @@
                     <Button text="Aceitar Corrida Selecionada"
                             onAction="#aceitarCorrida"
                             styleClass="botao-primario"/>
+                    <Button text="Iniciar Corrida"
+                            onAction="#iniciarCorrida"
+                            styleClass="botao-primario"/>
                     <Button text="Recusar"
                             onAction="#recusarCorrida"
                             styleClass="botao-secundario"/>
