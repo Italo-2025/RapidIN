@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.rapidIN.controller.PainelMotoristaController"
+      styleClass="tela-corrida"
+      spacing="0"
+      prefWidth="900" prefHeight="660">
+
+    <!-- Header -->
+    <HBox styleClass="header" alignment="CENTER_LEFT" spacing="12">
+        <Label text="RapidIN" styleClass="logo-header"/>
+        <Label text="MOTORISTA" styleClass="badge-motorista"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="labelNomeMotorista" text="Motorista" styleClass="nome-usuario"/>
+        <Button text="Sair" onAction="#logout" styleClass="botao-sair"/>
+    </HBox>
+
+    <!-- Conteudo -->
+    <VBox styleClass="conteudo-tab" spacing="24" alignment="CENTER">
+
+        <Label text="Disponibilidade" styleClass="titulo-secao"/>
+
+        <!-- Botao Toggle ONLINE/OFFLINE -->
+        <ToggleButton fx:id="toggleDisponivel"
+                      text="OFFLINE"
+                      onAction="#alternarStatusMotorista"
+                      styleClass="toggle-status"
+                      prefWidth="220" prefHeight="50"/>
+
+        <!-- Mensagem de retorno da procedure -->
+        <Label fx:id="labelAcaoStatus"
+               text="Clique no botao para alternar seu status."
+               styleClass="status-aguardando"
+               wrapText="true"/>
+
+    </VBox>
+
+</VBox>
