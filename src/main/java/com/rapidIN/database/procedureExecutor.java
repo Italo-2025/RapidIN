@@ -30,14 +30,16 @@ package com.rapidIN.database;
 //   (banco de dados), busca o prato (dados) e traz de volta.
 //   Ele conhece cada prato do cardápio (cada stored procedure).
 // ============================================================
-
 // Importa as classes necessárias para trabalhar com banco de dados
-import com.rapidIN.model.corrida;   // Modelo de dados de uma corrida
-import com.rapidIN.model.Usuario;   // Modelo de dados de um usuário
+import java.sql.CallableStatement;   // Modelo de dados de uma corrida
+import java.sql.ResultSet;   // Modelo de dados de um usuário
+import java.sql.SQLException;                  // Tudo necessário para SQL: Connection, ResultSet etc.
+import java.sql.Types;        // Lista dinâmica (cresce conforme adicionamos itens)
+import java.util.ArrayList;             // Interface de lista (mais genérica)
+import java.util.List;
 
-import java.sql.*;                  // Tudo necessário para SQL: Connection, ResultSet etc.
-import java.util.ArrayList;        // Lista dinâmica (cresce conforme adicionamos itens)
-import java.util.List;             // Interface de lista (mais genérica)
+import com.rapidIN.model.Usuario;
+import com.rapidIN.model.corrida;
 
 public class procedureExecutor {
 
@@ -47,7 +49,6 @@ public class procedureExecutor {
     //
     // ALTERE PARA false QUANDO O BANCO DE DADOS REAL ESTIVER DISPONÍVEL.
     public static final boolean MOCK_MODE = true;
-
 
     // =========================================================================
     // OPERAÇÃO: LOGIN
@@ -59,7 +60,9 @@ public class procedureExecutor {
     // =========================================================================
     public static Usuario fazerLogin(String email, String senha) {
         // Se MOCK_MODE estiver ativo, usa dados falsos
-        if (MOCK_MODE) return MockData.fazerLogin(email, senha);
+        if (MOCK_MODE) {
+            return MockData.fazerLogin(email, senha);
+        }
 
         // Modo real: chama a stored procedure no banco de dados
         // O bloco "try-with-resources" garante que o stmt seja fechado
@@ -68,13 +71,14 @@ public class procedureExecutor {
             stmt.setString(1, email); // Substitui o primeiro "?" pelo e-mail
             stmt.setString(2, senha); // Substitui o segundo "?" pela senha
             ResultSet rs = stmt.executeQuery(); // Executa e obtém o resultado
-            if (rs.next()) return mapearUsuario(rs); // Se encontrou, converte para Usuario
-        } catch (SQLException e) {
+            if (rs.next()) {
+                return mapearUsuario(rs); // Se encontrou, converte para Usuario
+
+                    }} catch (SQLException e) {
             System.err.println("Erro no login: " + e.getMessage());
         }
         return null; // Login falhou: credenciais inválidas ou erro no banco
     }
-
 
     // =========================================================================
     // OPERAÇÃO: CADASTRO
@@ -85,8 +89,10 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_cadastrar_usuario(nome, email, senha, genero, tipo)
     // =========================================================================
     public static boolean cadastrarUsuario(String nome, String email, String senha,
-                                           String genero, String tipo) {
-        if (MOCK_MODE) return MockData.cadastrarUsuario(nome, email, senha, genero, tipo);
+            String genero, String tipo) {
+        if (MOCK_MODE) {
+            return MockData.cadastrarUsuario(nome, email, senha, genero, tipo);
+        }
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_cadastrar_usuario(?, ?, ?, ?, ?)}")) {
@@ -103,7 +109,6 @@ public class procedureExecutor {
         }
     }
 
-
     // =========================================================================
     // OPERAÇÃO: CALCULAR PREÇO
     // Consulta o banco para obter o preço estimado da corrida entre
@@ -115,7 +120,9 @@ public class procedureExecutor {
     //       o banco de dados escreve o resultado nele (não enviamos valor).
     // =========================================================================
     public static double calcularPreco(String origem, String destino) {
-        if (MOCK_MODE) return MockData.calcularPreco(origem, destino);
+        if (MOCK_MODE) {
+            return MockData.calcularPreco(origem, destino);
+        }
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_calcular_preco(?, ?, ?)}")) {
@@ -131,7 +138,6 @@ public class procedureExecutor {
         }
     }
 
-
     // =========================================================================
     // OPERAÇÃO: SOLICITAR CORRIDA
     // Registra um novo pedido de corrida no banco de dados.
@@ -141,7 +147,9 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_solicitar_corrida(id_passageiro, origem, destino)
     // =========================================================================
     public static int solicitarCorrida(int idPassageiro, String origem, String destino) {
-        if (MOCK_MODE) return MockData.solicitarCorrida(idPassageiro, origem, destino);
+        if (MOCK_MODE) {
+            return MockData.solicitarCorrida(idPassageiro, origem, destino);
+        }
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_solicitar_corrida(?, ?, ?)}")) {
@@ -156,7 +164,6 @@ public class procedureExecutor {
         }
     }
 
-
     // =========================================================================
     // OPERAÇÃO: CORRIDAS DO PASSAGEIRO
     // Busca todas as corridas (histórico completo) de um passageiro específico.
@@ -165,7 +172,9 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_corridas_passageiro(id_passageiro)
     // =========================================================================
     public static List<corrida> corridasPassageiro(int idPassageiro) {
-        if (MOCK_MODE) return MockData.corridasPassageiro(idPassageiro);
+        if (MOCK_MODE) {
+            return MockData.corridasPassageiro(idPassageiro);
+        }
 
         List<corrida> lista = new ArrayList<>(); // Lista que será retornada
         try (CallableStatement stmt = conexao.getConexao()
@@ -173,13 +182,14 @@ public class procedureExecutor {
             stmt.setInt(1, idPassageiro);
             ResultSet rs = stmt.executeQuery();
             // "while (rs.next())" percorre cada linha retornada pelo banco
-            while (rs.next()) lista.add(mapearCorrida(rs)); // Converte cada linha em objeto corrida
-        } catch (SQLException e) {
+            while (rs.next()) {
+                lista.add(mapearCorrida(rs)); // Converte cada linha em objeto corrida
+
+                    }} catch (SQLException e) {
             System.err.println("Erro ao buscar corridas: " + e.getMessage());
         }
         return lista;
     }
-
 
     // =========================================================================
     // OPERAÇÃO: CORRIDAS DO MOTORISTA
@@ -188,20 +198,23 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_corridas_motorista(id_motorista)
     // =========================================================================
     public static List<corrida> corridasMotorista(int idMotorista) {
-        if (MOCK_MODE) return MockData.corridasMotorista(idMotorista);
+        if (MOCK_MODE) {
+            return MockData.corridasMotorista(idMotorista);
+        }
 
         List<corrida> lista = new ArrayList<>();
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_corridas_motorista(?)}")) {
             stmt.setInt(1, idMotorista);
             ResultSet rs = stmt.executeQuery();
-            while (rs.next()) lista.add(mapearCorrida(rs));
+            while (rs.next()) {
+                lista.add(mapearCorrida(rs));
+            }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar corridas: " + e.getMessage());
         }
         return lista;
     }
-
 
     // =========================================================================
     // OPERAÇÃO: CORRIDAS DISPONÍVEIS PARA MOTORISTA
@@ -212,20 +225,23 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_corridas_disponiveis(genero_motorista)
     // =========================================================================
     public static List<corrida> corridasDisponiveis(String generoMotorista) {
-        if (MOCK_MODE) return MockData.corridasDisponiveis(generoMotorista);
+        if (MOCK_MODE) {
+            return MockData.corridasDisponiveis(generoMotorista);
+        }
 
         List<corrida> lista = new ArrayList<>();
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_corridas_disponiveis(?)}")) {
             stmt.setString(1, generoMotorista); // "M" ou "F"
             ResultSet rs = stmt.executeQuery();
-            while (rs.next()) lista.add(mapearCorrida(rs));
+            while (rs.next()) {
+                lista.add(mapearCorrida(rs));
+            }
         } catch (SQLException e) {
             System.err.println("Erro ao buscar corridas disponiveis: " + e.getMessage());
         }
         return lista;
     }
-
 
     // =========================================================================
     // OPERAÇÃO: ACEITAR CORRIDA
@@ -236,7 +252,9 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_aceitar_corrida(id_corrida, id_motorista)
     // =========================================================================
     public static boolean aceitarCorrida(int idCorrida, int idMotorista) {
-        if (MOCK_MODE) return MockData.aceitarCorrida(idCorrida, idMotorista);
+        if (MOCK_MODE) {
+            return MockData.aceitarCorrida(idCorrida, idMotorista);
+        }
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_aceitar_corrida(?, ?)}")) {
@@ -250,7 +268,6 @@ public class procedureExecutor {
         }
     }
 
-
     // =========================================================================
     // OPERAÇÃO: RECUSAR CORRIDA
     // Motorista recusa uma corrida disponível.
@@ -260,7 +277,9 @@ public class procedureExecutor {
     // Stored procedure chamada: sp_recusar_corrida(id_corrida)
     // =========================================================================
     public static boolean recusarCorrida(int idCorrida) {
-        if (MOCK_MODE) return MockData.recusarCorrida(idCorrida);
+        if (MOCK_MODE) {
+            return MockData.recusarCorrida(idCorrida);
+        }
 
         try (CallableStatement stmt = conexao.getConexao()
                 .prepareCall("{CALL sp_recusar_corrida(?)}")) {
@@ -272,7 +291,6 @@ public class procedureExecutor {
             return false;
         }
     }
-
 
     // =========================================================================
     // OPERAÇÃO: ATUALIZAR DISPONIBILIDADE DO MOTORISTA
@@ -296,7 +314,6 @@ public class procedureExecutor {
         }
     }
 
-
     // =========================================================================
     // MÉTODOS AUXILIARES DE MAPEAMENTO
     // Estes métodos convertem uma linha de resultado do banco (ResultSet)
@@ -308,7 +325,6 @@ public class procedureExecutor {
     //   Os métodos abaixo leem coluna por coluna e montam o objeto Java
     //   correspondente.
     // =========================================================================
-
     // Converte uma linha do ResultSet em um objeto Usuario
     // Usado após chamar sp_login_usuario
     private static Usuario mapearUsuario(ResultSet rs) throws SQLException {
@@ -338,4 +354,43 @@ public class procedureExecutor {
         c.setGeneroPassageiro(rs.getString("genero_passageiro")); // Gênero do passageiro
         return c;
     }
+    // =========================================================================
+// OPERAÇÃO: AVALIAR CORRIDA
+// Registra uma avaliação (nota e comentário) feita por um usuário
+// sobre outro usuário após a corrida ser concluída.
+// Stored procedure chamada: proc_avaliar_corrida
+// =========================================================================
+
+    public static String avaliarCorrida(int corridaId, int avaliadorId, int avaliadoId,
+            int nota, String comentario) {
+
+        if (MOCK_MODE) {
+            // Aqui você pode implementar uma simulação no MockData se quiser
+            return "Avaliação registrada (mock).";
+        }
+
+        String mensagem = "";
+
+        String sql = "{ call proc_avaliar_corrida(?,?,?,?,?,?) }";
+
+        try (CallableStatement cs = conexao.getConexao().prepareCall(sql)) {
+
+            cs.setInt(1, corridaId);
+            cs.setInt(2, avaliadorId);
+            cs.setInt(3, avaliadoId);
+            cs.setInt(4, nota);
+            cs.setString(5, comentario);
+            cs.registerOutParameter(6, Types.VARCHAR);
+
+            cs.execute();
+            mensagem = cs.getString(6);
+
+        } catch (SQLException e) {
+            System.err.println("Erro ao avaliar corrida: " + e.getMessage());
+            mensagem = "Erro ao avaliar corrida.";
+        }
+
+        return mensagem;
+    }
+
 }

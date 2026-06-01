@@ -85,6 +85,36 @@
                     </columns>
                 </TableView>
 
+                <Separator />
+
+                <VBox spacing="10" styleClass="painel-avaliacao">
+                    <Label text="Avaliar Corrida Concluida" styleClass="titulo-secao"/>
+                    <Label fx:id="labelCorridaSelecionada"
+                           text="Selecione uma corrida concluida para avaliar."
+                           wrapText="true"
+                           styleClass="label-campo"/>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Nota:" styleClass="label-campo"/>
+                        <ComboBox fx:id="comboNotaAvaliacao" prefWidth="80"/>
+                    </HBox>
+
+                    <Label text="Comentario:" styleClass="label-campo"/>
+                    <TextArea fx:id="campoComentarioAvaliacao"
+                              prefRowCount="3"
+                              wrapText="true"
+                              styleClass="campo-texto"/>
+
+                    <Button text="Enviar Avaliacao"
+                            onAction="#avaliarCorridaSelecionada"
+                            styleClass="botao-primario"/>
+
+                    <Label fx:id="labelAvaliacaoStatus"
+                           text=""
+                           wrapText="true"
+                           styleClass="status-aguardando"/>
+                </VBox>
+
             </VBox>
         </Tab>
 

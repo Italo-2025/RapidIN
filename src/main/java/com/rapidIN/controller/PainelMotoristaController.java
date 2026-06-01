@@ -27,51 +27,74 @@ package com.rapidIN.controller;
 //   pressionado (ONLINE) e não-pressionado (OFFLINE).
 //   Funciona como um interruptor de luz.
 // ============================================================
-
 // Importações necessárias
-import com.rapidIN.App;                          // Para trocar de tela
-import com.rapidIN.SessionManager;              // Para obter o motorista logado
-import com.rapidIN.database.procedureExecutor; // Para operações com o banco
-import com.rapidIN.model.corrida;               // Tipo dos itens das tabelas
-import com.rapidIN.model.Usuario;               // Tipo do motorista logado
+import java.util.List;                          // Para trocar de tela
 
-// Coleções e componentes JavaFX
+import com.rapidIN.App;              // Para obter o motorista logado
+import com.rapidIN.SessionManager; // Para operações com o banco
+import com.rapidIN.database.procedureExecutor;               // Tipo dos itens das tabelas
+import com.rapidIN.model.Usuario;               // Tipo do motorista logado
+import com.rapidIN.model.corrida;
+
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
-
-import java.util.List;
 
 public class PainelMotoristaController {
 
     // ── COMPONENTES VISUAIS ───────────────────────────────────────────────────
-
-    @FXML private Label labelNomeMotorista;   // Exibe "Olá, [Nome]" no topo
-    @FXML private ToggleButton toggleDisponivel; // Botão interruptor ONLINE/OFFLINE
-    @FXML private Label labelAcaoStatus;      // Exibe feedback das ações (aceitar, recusar etc.)
+    @FXML
+    private Label labelNomeMotorista;   // Exibe "Olá, [Nome]" no topo
+    @FXML
+    private ToggleButton toggleDisponivel; // Botão interruptor ONLINE/OFFLINE
+    @FXML
+    private Label labelAcaoStatus;      // Exibe feedback das ações (aceitar, recusar etc.)
 
     // ── Tabela de corridas disponíveis ──────────────────────────────────────
     // Exibe corridas com status AGUARDANDO que o motorista pode aceitar
-    @FXML private TableView<corrida> tabelaDisponiveis;
-    @FXML private TableColumn<corrida, String> dColOrigem;      // Coluna "Origem"
-    @FXML private TableColumn<corrida, String> dColDestino;     // Coluna "Destino"
-    @FXML private TableColumn<corrida, String> dColPassageiro;  // Coluna "Passageiro"
-    @FXML private TableColumn<corrida, String> dColPreco;       // Coluna "Preço"
+    @FXML
+    private TableView<corrida> tabelaDisponiveis;
+    @FXML
+    private TableColumn<corrida, String> dColOrigem;      // Coluna "Origem"
+    @FXML
+    private TableColumn<corrida, String> dColDestino;     // Coluna "Destino"
+    @FXML
+    private TableColumn<corrida, String> dColPassageiro;  // Coluna "Passageiro"
+    @FXML
+    private TableColumn<corrida, String> dColPreco;       // Coluna "Preço"
 
     // ── Tabela de histórico do motorista ────────────────────────────────────
     // Exibe corridas que o motorista já aceitou/realizou/recusou
-    @FXML private TableView<corrida> tabelaHistoricoMotorista;
-    @FXML private TableColumn<corrida, String> hColOrigem;      // Coluna "Origem"
-    @FXML private TableColumn<corrida, String> hColDestino;     // Coluna "Destino"
-    @FXML private TableColumn<corrida, String> hColPassageiro;  // Coluna "Passageiro"
-    @FXML private TableColumn<corrida, String> hColStatus;      // Coluna "Status"
-    @FXML private TableColumn<corrida, String> hColPreco;       // Coluna "Preço"
+    @FXML
+    private TableView<corrida> tabelaHistoricoMotorista;
+    @FXML
+    private TableColumn<corrida, String> hColOrigem;      // Coluna "Origem"
+    @FXML
+    private TableColumn<corrida, String> hColDestino;     // Coluna "Destino"
+    @FXML
+    private TableColumn<corrida, String> hColPassageiro;  // Coluna "Passageiro"
+    @FXML
+    private TableColumn<corrida, String> hColStatus;      // Coluna "Status"
+    @FXML
+    private TableColumn<corrida, String> hColPreco;       // Coluna "Preço"
 
+    @FXML
+    private Label labelCorridaSelecionada;              // Exibe a corrida selecionada para avaliacao
+    @FXML
+    private ComboBox<String> comboNotaAvaliacao;       // Nota da avaliacao
+    @FXML
+    private TextArea campoComentarioAvaliacao;         // Comentario opcional
+    @FXML
+    private Label labelAvaliacaoStatus;                // Feedback da avaliacao
 
     // ── REFERÊNCIA AO MOTORISTA LOGADO ───────────────────────────────────────
     private Usuario motorista;
-
 
     // ── INICIALIZAÇÃO ─────────────────────────────────────────────────────────
     // Chamado automaticamente pelo JavaFX após injetar os componentes @FXML.
@@ -107,11 +130,17 @@ public class PainelMotoristaController {
         hColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         hColPreco.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
 
+        comboNotaAvaliacao.setItems(FXCollections.observableArrayList("1", "2", "3", "4", "5"));
+        comboNotaAvaliacao.getSelectionModel().selectFirst();
+
+        tabelaHistoricoMotorista.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> {
+            atualizarDetalhesAvaliacao(newValue);
+        });
+
         // Carrega os dados iniciais em ambas as tabelas
         carregarCorridasDisponiveis();
         carregarHistorico();
     }
-
 
     // ── AÇÃO: TOGGLE ONLINE/OFFLINE ───────────────────────────────────────────
     // Chamado quando o motorista clica no botão de disponibilidade.
@@ -139,13 +168,14 @@ public class PainelMotoristaController {
         }
     }
 
-
     // ── AÇÃO: BOTÃO "ATUALIZAR CORRIDAS" ─────────────────────────────────────
     // Recarrega a lista de corridas disponíveis a partir do banco.
     // Filtra automaticamente pelo gênero do motorista.
     @FXML
     private void carregarCorridasDisponiveis() {
-        if (motorista == null) return;
+        if (motorista == null) {
+            return;
+        }
 
         // Busca corridas com status AGUARDANDO, já filtradas pela regra de gênero
         List<corrida> corridas = procedureExecutor.corridasDisponiveis(motorista.getGenero());
@@ -153,7 +183,6 @@ public class PainelMotoristaController {
         // Preenche a tabela com os dados obtidos
         tabelaDisponiveis.setItems(FXCollections.observableArrayList(corridas));
     }
-
 
     // ── AÇÃO: BOTÃO "ACEITAR CORRIDA" ─────────────────────────────────────────
     // Vincula o motorista à corrida selecionada e muda seu status para EM_ANDAMENTO.
@@ -186,7 +215,6 @@ public class PainelMotoristaController {
         }
     }
 
-
     // ── AÇÃO: BOTÃO "RECUSAR CORRIDA" ─────────────────────────────────────────
     // Cancela a corrida selecionada (muda status para CANCELADA).
     @FXML
@@ -207,17 +235,77 @@ public class PainelMotoristaController {
         carregarCorridasDisponiveis();
     }
 
-
     // ── AÇÃO: BOTÃO "ATUALIZAR HISTÓRICO" ────────────────────────────────────
     // Recarrega o histórico de corridas do motorista.
     @FXML
     private void carregarHistorico() {
-        if (motorista == null) return;
+        if (motorista == null) {
+            return;
+        }
 
         List<corrida> corridas = procedureExecutor.corridasMotorista(motorista.getId());
         tabelaHistoricoMotorista.setItems(FXCollections.observableArrayList(corridas));
     }
 
+    @FXML
+    private void atualizarDetalhesAvaliacao(corrida corridaSelecionada) {
+        if (corridaSelecionada == null) {
+            labelCorridaSelecionada.setText("Selecione uma corrida concluida para avaliar.");
+            labelAvaliacaoStatus.setText("");
+            return;
+        }
+        labelCorridaSelecionada.setText(
+                "Corrida #" + corridaSelecionada.getId()
+                + " - Status: " + corridaSelecionada.getStatus()
+                + " - Passageiro: " + corridaSelecionada.getNomePassageiro());
+
+        if (!"CONCLUIDA".equals(corridaSelecionada.getStatus())) {
+            labelAvaliacaoStatus.setText("So corridas concluídas podem ser avaliadas.");
+        } else {
+            labelAvaliacaoStatus.setText("Preencha a nota e o comentario e clique em Enviar Avaliacao.");
+        }
+    }
+
+    @FXML
+    private void avaliarCorridaSelecionada() {
+        corrida corridaSelecionada = tabelaHistoricoMotorista.getSelectionModel().getSelectedItem();
+
+        if (corridaSelecionada == null) {
+            labelAvaliacaoStatus.setText("Selecione uma corrida para avaliar.");
+            return;
+        }
+
+        if (!"CONCLUIDA".equals(corridaSelecionada.getStatus())) {
+            labelAvaliacaoStatus.setText("So corridas concluídas podem ser avaliadas.");
+            return;
+        }
+
+        String notaTexto = comboNotaAvaliacao.getValue();
+        if (notaTexto == null || notaTexto.isEmpty()) {
+            labelAvaliacaoStatus.setText("Escolha uma nota de 1 a 5.");
+            return;
+        }
+
+        int nota = Integer.parseInt(notaTexto);
+        String comentario = campoComentarioAvaliacao.getText().trim();
+        int avaliadoId = corridaSelecionada.getIdPassageiro();
+
+        if (avaliadoId == 0) {
+            labelAvaliacaoStatus.setText("Nao foi possivel identificar o passageiro desta corrida.");
+            return;
+        }
+
+        String mensagem = procedureExecutor.avaliarCorrida(
+                corridaSelecionada.getId(),
+                motorista.getId(),
+                avaliadoId,
+                nota,
+                comentario.isEmpty() ? null : comentario);
+
+        labelAvaliacaoStatus.setText(mensagem);
+        campoComentarioAvaliacao.clear();
+        carregarHistorico();
+    }
 
     // ── AÇÃO: BOTÃO "SAIR" (LOGOUT) ──────────────────────────────────────────
     // Encerra a sessão do motorista e volta para a tela de login.
@@ -230,7 +318,6 @@ public class PainelMotoristaController {
             e.printStackTrace();
         }
     }
-
 
     // ── MÉTODO AUXILIAR: ATUALIZAR TEXTO DO TOGGLE ───────────────────────────
     // Atualiza o rótulo do botão ONLINE/OFFLINE conforme o estado atual.
