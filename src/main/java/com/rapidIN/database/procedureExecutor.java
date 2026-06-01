@@ -298,6 +298,38 @@ public class procedureExecutor {
 
 
     // =========================================================================
+    // OPERAÇÃO: ALTERNAR STATUS DO MOTORISTA (ONLINE/OFFLINE)
+    // Liga/desliga a disponibilidade do motorista via procedure.
+    // Se está ONLINE, vira OFFLINE e vice-versa.
+    // Bloqueia a troca se o motorista estiver EM_CORRIDA.
+    //
+    // Stored procedure chamada: proc_alternar_status_motorista(motorista_id, OUT novo_status, OUT mensagem)
+    // =========================================================================
+    public static void alternarStatusMotorista(int motoristaId) {
+        String sql = "{ call proc_alternar_status_motorista(?,?,?) }";
+
+        try (Connection con = Conexao.abrir();
+             CallableStatement cs = con.prepareCall(sql)) {
+
+            cs.setInt(1, motoristaId);                 // IN  - motorista_id
+            cs.registerOutParameter(2, Types.VARCHAR); // OUT - novo_status
+            cs.registerOutParameter(3, Types.VARCHAR); // OUT - mensagem
+
+            cs.execute();
+
+            String novoStatus = cs.getString(2);
+            String mensagem   = cs.getString(3);
+
+            System.out.println("Novo status: " + novoStatus);
+            System.out.println("Mensagem: "    + mensagem);
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao alternar status: " + e.getMessage());
+        }
+    }
+
+
+    // =========================================================================
     // MÉTODOS AUXILIARES DE MAPEAMENTO
     // Estes métodos convertem uma linha de resultado do banco (ResultSet)
     // em um objeto Java (Usuario ou corrida).
