@@ -77,15 +77,24 @@
 
                 <TableView fx:id="tabelaHistoricoMotorista" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="hColOrigem"     text="Origem"     prefWidth="180"/>
-                        <TableColumn fx:id="hColDestino"    text="Destino"    prefWidth="180"/>
-                        <TableColumn fx:id="hColPassageiro" text="Passageiro" prefWidth="150"/>
-                        <TableColumn fx:id="hColStatus"     text="Status"     prefWidth="130"/>
-                        <TableColumn fx:id="hColPreco"      text="Preco"      prefWidth="100"/>
+                        <TableColumn fx:id="hColOrigem"      text="Origem"      prefWidth="160"/>
+                        <TableColumn fx:id="hColDestino"     text="Destino"     prefWidth="160"/>
+                        <TableColumn fx:id="hColPassageiro"  text="Passageiro"  prefWidth="140"/>
+                        <TableColumn fx:id="hColStatus"      text="Status"      prefWidth="120"/>
+                        <TableColumn fx:id="hColPreco"       text="Preco"       prefWidth="90"/>
+                        <TableColumn fx:id="hColComentario" text="Comentario" prefWidth="210"/>
                     </columns>
                 </TableView>
 
                 <Separator />
+
+                <!--
+                    Seção de Avaliação:
+                    - O motorista seleciona uma corrida concluída no histórico
+                    - Escolhe uma nota (1-5) e pode adicionar um comentário opcional
+                    - Ao clicar em "Enviar Avaliacao" a controller chama a procedure
+                      que envia os dados ao banco (proc_avaliar_corrida)
+                -->
 
                 <VBox spacing="10" styleClass="painel-avaliacao">
                     <Label text="Avaliar Corrida Concluida" styleClass="titulo-secao"/>

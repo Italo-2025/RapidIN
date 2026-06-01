@@ -21,12 +21,10 @@ package com.rapidIN.model;
 //   de entrega (destino), quem pediu, quem vai entregar, o valor
 //   e o status atual do pedido.
 // ============================================================
-
 public class corrida {
 
     // ── CAMPOS (atributos) ────────────────────────────────────────────────────
     // Cada campo guarda uma informação específica sobre a corrida.
-
     private int id;                  // Número único que identifica esta corrida no banco de dados
     private String origem;           // Endereço de saída (onde o passageiro está)
     private String destino;          // Endereço de chegada (onde o passageiro quer ir)
@@ -36,21 +34,22 @@ public class corrida {
     private int idMotorista;         // Identificador do motorista que aceitou (0 se ainda não aceita)
     private String nomePassageiro;   // Nome do passageiro (para exibição na tela do motorista)
     private String nomeMotorista;    // Nome do motorista (para exibição na tela do passageiro)
+    private String comentario;       // Comentário enviado pelo usuário ao avaliar a corrida
     private String generoPassageiro; // Gênero do passageiro: "M" ou "F"
-                                     // Usado para aplicar a regra: passageira feminina
-                                     // só pode ser atendida por motorista feminina
+    // Usado para aplicar a regra: passageira feminina
+    // só pode ser atendida por motorista feminina
 
     // ── CONSTRUTORES ─────────────────────────────────────────────────────────
-
     // Construtor vazio: cria uma corrida sem dados.
     // Usado quando os campos serão preenchidos um a um
     // (por exemplo, ao ler dados do banco de dados).
-    public corrida() {}
+    public corrida() {
+    }
 
     // Construtor completo: cria uma corrida com os dados principais de uma vez.
     // O campo "generoPassageiro" não está aqui pois é definido separadamente via setter.
     public corrida(int id, String origem, String destino, String status, double preco,
-                   int idPassageiro, int idMotorista, String nomePassageiro, String nomeMotorista) {
+            int idPassageiro, int idMotorista, String nomePassageiro, String nomeMotorista) {
         this.id = id;
         this.origem = origem;
         this.destino = destino;
@@ -65,46 +64,104 @@ public class corrida {
     // ── GETTERS E SETTERS ─────────────────────────────────────────────────────
     // Métodos para ler e alterar cada campo da corrida.
     // "get" retorna o valor atual; "set" define um novo valor.
-
     // Identificador único da corrida no banco de dados
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     // Endereço de partida
-    public String getOrigem() { return origem; }
-    public void setOrigem(String origem) { this.origem = origem; }
+    public String getOrigem() {
+        return origem;
+    }
+
+    public void setOrigem(String origem) {
+        this.origem = origem;
+    }
 
     // Endereço de destino
-    public String getDestino() { return destino; }
-    public void setDestino(String destino) { this.destino = destino; }
+    public String getDestino() {
+        return destino;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
 
     // Situação atual da corrida
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     // Valor em reais
-    public double getPreco() { return preco; }
-    public void setPreco(double preco) { this.preco = preco; }
+    public double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(double preco) {
+        this.preco = preco;
+    }
 
     // ID do passageiro vinculado a esta corrida
-    public int getIdPassageiro() { return idPassageiro; }
-    public void setIdPassageiro(int idPassageiro) { this.idPassageiro = idPassageiro; }
+    public int getIdPassageiro() {
+        return idPassageiro;
+    }
+
+    public void setIdPassageiro(int idPassageiro) {
+        this.idPassageiro = idPassageiro;
+    }
 
     // ID do motorista vinculado a esta corrida (0 se ainda não há motorista)
-    public int getIdMotorista() { return idMotorista; }
-    public void setIdMotorista(int idMotorista) { this.idMotorista = idMotorista; }
+    public int getIdMotorista() {
+        return idMotorista;
+    }
+
+    public void setIdMotorista(int idMotorista) {
+        this.idMotorista = idMotorista;
+    }
 
     // Nome do passageiro (exibido para o motorista na lista de corridas disponíveis)
-    public String getNomePassageiro() { return nomePassageiro; }
-    public void setNomePassageiro(String nomePassageiro) { this.nomePassageiro = nomePassageiro; }
+    public String getNomePassageiro() {
+        return nomePassageiro;
+    }
+
+    public void setNomePassageiro(String nomePassageiro) {
+        this.nomePassageiro = nomePassageiro;
+    }
 
     // Nome do motorista (exibido para o passageiro no histórico)
-    public String getNomeMotorista() { return nomeMotorista; }
-    public void setNomeMotorista(String nomeMotorista) { this.nomeMotorista = nomeMotorista; }
+    public String getNomeMotorista() {
+        return nomeMotorista;
+    }
+
+    public void setNomeMotorista(String nomeMotorista) {
+        this.nomeMotorista = nomeMotorista;
+    }
+
+    // Comentário enviado pelo usuário quando avaliou a corrida
+    public String getComentario() {
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
 
     // Gênero do passageiro desta corrida (usado para filtrar motoristas disponíveis)
-    public String getGeneroPassageiro() { return generoPassageiro; }
-    public void setGeneroPassageiro(String generoPassageiro) { this.generoPassageiro = generoPassageiro; }
+    public String getGeneroPassageiro() {
+        return generoPassageiro;
+    }
+
+    public void setGeneroPassageiro(String generoPassageiro) {
+        this.generoPassageiro = generoPassageiro;
+    }
 
     // ── MÉTODO ESPECIAL DE FORMATAÇÃO ─────────────────────────────────────────
     // Este método formata o preço para exibição na tabela da interface.

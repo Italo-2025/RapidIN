@@ -83,17 +83,26 @@
 
                 <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colOrigem"    text="Origem"    prefWidth="195"/>
-                        <TableColumn fx:id="colDestino"   text="Destino"   prefWidth="195"/>
-                        <TableColumn fx:id="colStatus"    text="Status"    prefWidth="130"/>
-                        <TableColumn fx:id="colPreco"     text="Preco"     prefWidth="100"/>
-                        <TableColumn fx:id="colMotorista" text="Motorista" prefWidth="170"/>
+                        <TableColumn fx:id="colOrigem"      text="Origem"      prefWidth="150"/>
+                        <TableColumn fx:id="colDestino"     text="Destino"     prefWidth="150"/>
+                        <TableColumn fx:id="colStatus"      text="Status"      prefWidth="110"/>
+                        <TableColumn fx:id="colPreco"       text="Preco"       prefWidth="90"/>
+                        <TableColumn fx:id="colMotorista"   text="Motorista"   prefWidth="150"/>
+                        <TableColumn fx:id="colComentario"  text="Comentario"  prefWidth="215"/>
                     </columns>
                 </TableView>
 
-                <Separator />
+                                <Separator />
 
-                <VBox spacing="10" styleClass="painel-avaliacao">
+                                <!--
+                                        Seção de Avaliação:
+                                        - O passageiro seleciona uma corrida concluída no histórico
+                                        - Escolhe uma nota (1-5) e pode adicionar um comentário opcional
+                                        - Ao clicar em "Enviar Avaliacao" a controller chama a procedure
+                                            que envia os dados ao banco (proc_avaliar_corrida)
+                                -->
+
+                                <VBox spacing="10" styleClass="painel-avaliacao">
                     <Label text="Avaliar Corrida Concluida" styleClass="titulo-secao"/>
                     <Label fx:id="labelCorridaSelecionada"
                            text="Selecione uma corrida concluida para avaliar."

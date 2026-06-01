@@ -83,15 +83,26 @@ public class PainelMotoristaController {
     private TableColumn<corrida, String> hColStatus;      // Coluna "Status"
     @FXML
     private TableColumn<corrida, String> hColPreco;       // Coluna "Preço"
+    @FXML
+    private TableColumn<corrida, String> hColComentario;  // Coluna "Comentário"
+
+    // ------------------------------------------------------------
+    // Seção: AVALIAÇÃO DE CORRIDA (motorista)
+    // - o motorista pode selecionar uma corrida CONCLUIDA no histórico
+    // - escolher uma nota (1..5) e inserir um comentário opcional ao passageiro
+    // - o envio chama procedureExecutor.avaliarCorrida(...) que grava a avaliação
+    // ------------------------------------------------------------
+    @FXML
+    private Label labelCorridaSelecionada; // Resumo da corrida selecionada (id, status, passageiro)
 
     @FXML
-    private Label labelCorridaSelecionada;              // Exibe a corrida selecionada para avaliacao
+    private ComboBox<String> comboNotaAvaliacao; // Opções: "1", "2", "3", "4", "5"
+
     @FXML
-    private ComboBox<String> comboNotaAvaliacao;       // Nota da avaliacao
+    private TextArea campoComentarioAvaliacao; // Comentário livre (pode ser null)
+
     @FXML
-    private TextArea campoComentarioAvaliacao;         // Comentario opcional
-    @FXML
-    private Label labelAvaliacaoStatus;                // Feedback da avaliacao
+    private Label labelAvaliacaoStatus; // Mensagens de sucesso/erro após enviar avaliação
 
     // ── REFERÊNCIA AO MOTORISTA LOGADO ───────────────────────────────────────
     private Usuario motorista;
@@ -129,6 +140,7 @@ public class PainelMotoristaController {
         hColPassageiro.setCellValueFactory(new PropertyValueFactory<>("nomePassageiro"));
         hColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         hColPreco.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
+        hColComentario.setCellValueFactory(new PropertyValueFactory<>("comentario"));
 
         comboNotaAvaliacao.setItems(FXCollections.observableArrayList("1", "2", "3", "4", "5"));
         comboNotaAvaliacao.getSelectionModel().selectFirst();
@@ -245,6 +257,7 @@ public class PainelMotoristaController {
 
         List<corrida> corridas = procedureExecutor.corridasMotorista(motorista.getId());
         tabelaHistoricoMotorista.setItems(FXCollections.observableArrayList(corridas));
+        tabelaHistoricoMotorista.refresh();
     }
 
     @FXML

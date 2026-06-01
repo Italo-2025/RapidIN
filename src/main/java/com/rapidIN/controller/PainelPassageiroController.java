@@ -75,15 +75,27 @@ public class PainelPassageiroController {
     private TableColumn<corrida, String> colPreco;      // Coluna "Preço"
     @FXML
     private TableColumn<corrida, String> colMotorista;  // Coluna "Motorista"
+    @FXML
+    private TableColumn<corrida, String> colComentario; // Coluna "Comentário"
+
+    // ------------------------------------------------------------
+    // Seção: AVALIAÇÃO DE CORRIDA (passageiro)
+    // - o passageiro pode selecionar uma corrida CONCLUIDA no histórico
+    // - escolher uma nota (1..5) e inserir um comentário opcional
+    // - a submissão chama procedureExecutor.avaliarCorrida(...) que
+    //   grava a avaliação no banco e retorna uma mensagem de status
+    // ------------------------------------------------------------
+    @FXML
+    private Label labelCorridaSelecionada; // Resumo da corrida selecionada (id, status, motorista)
 
     @FXML
-    private Label labelCorridaSelecionada;              // Exibe a corrida selecionada para avaliacao
+    private ComboBox<String> comboNotaAvaliacao; // Opções: "1", "2", "3", "4", "5"
+
     @FXML
-    private ComboBox<String> comboNotaAvaliacao;       // Escolha da nota de avaliacao
+    private TextArea campoComentarioAvaliacao; // Comentário livre (pode ser null)
+
     @FXML
-    private TextArea campoComentarioAvaliacao;         // Texto opcional do comentario
-    @FXML
-    private Label labelAvaliacaoStatus;                // Feedback sobre a avaliacao
+    private Label labelAvaliacaoStatus; // Mensagens de sucesso/erro após enviar avaliação
 
     // ── REFERÊNCIA AO USUÁRIO LOGADO ─────────────────────────────────────────
     // Guardamos o usuário localmente para não precisar consultar o SessionManager
@@ -111,6 +123,7 @@ public class PainelPassageiroController {
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         colPreco.setCellValueFactory(new PropertyValueFactory<>("precoFormatado")); // Usa o preço formatado (R$ X,XX)
         colMotorista.setCellValueFactory(new PropertyValueFactory<>("nomeMotorista"));
+        colComentario.setCellValueFactory(new PropertyValueFactory<>("comentario"));
 
         comboNotaAvaliacao.setItems(FXCollections.observableArrayList("1", "2", "3", "4", "5"));
         comboNotaAvaliacao.getSelectionModel().selectFirst();
@@ -204,6 +217,7 @@ public class PainelPassageiroController {
         // FXCollections.observableArrayList converte a lista Java para um formato
         // que o JavaFX consegue "observar" e renderizar na tabela automaticamente
         tabelaHistorico.setItems(FXCollections.observableArrayList(corridas));
+        tabelaHistorico.refresh();
     }
 
     @FXML

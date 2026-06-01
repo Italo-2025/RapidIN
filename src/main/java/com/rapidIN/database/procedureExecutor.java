@@ -74,7 +74,8 @@ public class procedureExecutor {
             if (rs.next()) {
                 return mapearUsuario(rs); // Se encontrou, converte para Usuario
 
-                    }} catch (SQLException e) {
+            }
+        } catch (SQLException e) {
             System.err.println("Erro no login: " + e.getMessage());
         }
         return null; // Login falhou: credenciais inválidas ou erro no banco
@@ -185,7 +186,8 @@ public class procedureExecutor {
             while (rs.next()) {
                 lista.add(mapearCorrida(rs)); // Converte cada linha em objeto corrida
 
-                    }} catch (SQLException e) {
+            }
+        } catch (SQLException e) {
             System.err.println("Erro ao buscar corridas: " + e.getMessage());
         }
         return lista;
@@ -351,6 +353,7 @@ public class procedureExecutor {
         c.setIdMotorista(rs.getInt("id_motorista"));           // ID do motorista
         c.setNomePassageiro(rs.getString("nome_passageiro"));  // Nome do passageiro
         c.setNomeMotorista(rs.getString("nome_motorista"));    // Nome do motorista
+        c.setComentario(rs.getString("comentario"));           // Comentário de avaliação do usuário logado
         c.setGeneroPassageiro(rs.getString("genero_passageiro")); // Gênero do passageiro
         return c;
     }
@@ -365,8 +368,7 @@ public class procedureExecutor {
             int nota, String comentario) {
 
         if (MOCK_MODE) {
-            // Aqui você pode implementar uma simulação no MockData se quiser
-            return "Avaliação registrada (mock).";
+            return MockData.avaliarCorrida(corridaId, avaliadorId, avaliadoId, nota, comentario);
         }
 
         String mensagem = "";

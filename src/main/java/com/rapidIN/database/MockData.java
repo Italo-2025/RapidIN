@@ -33,13 +33,12 @@ package com.rapidIN.database;
 //   arquivo pode ser ignorado. Ele só é relevante quando
 //   MOCK_MODE = true em procedureExecutor.java.
 // ============================================================
-
 // Importações das classes de dados e das coleções Java
-import com.rapidIN.model.corrida;   // Modelo de corrida
-import com.rapidIN.model.Usuario;   // Modelo de usuário
+import java.util.ArrayList;   // Modelo de corrida
+import java.util.List;   // Modelo de usuário
 
-import java.util.ArrayList;        // Lista que cresce dinamicamente
-import java.util.List;             // Interface de lista
+import com.rapidIN.model.Usuario;        // Lista que cresce dinamicamente
+import com.rapidIN.model.corrida;             // Interface de lista
 
 // Visibilidade "class" (sem "public"): esta classe só pode ser
 // usada dentro do pacote "database". Ela é interna ao sistema
@@ -51,7 +50,7 @@ class MockData {
     // "static final" significa que existem uma única vez e não podem ser substituídas.
     // Porém, o CONTEÚDO das listas pode ser alterado (adicionar/remover itens).
     static final List<Usuario> usuarios = new ArrayList<>();
-    static final List<corrida> corridas  = new ArrayList<>();
+    static final List<corrida> corridas = new ArrayList<>();
 
     // Contadores para gerar IDs únicos para novos registros.
     // Começam em 5 e 4 para não conflitar com os dados iniciais.
@@ -67,35 +66,33 @@ class MockData {
         // Parâmetros: (id, nome, email, genero, tipo, disponivel)
         // Nota: "disponivel" só é relevante para motoristas.
         //       Para passageiros, sempre false.
-        usuarios.add(new Usuario(1, "Joao Silva",   "joao@email.com",   "M", "PASSAGEIRO", false));
-        usuarios.add(new Usuario(2, "Maria Souza",  "maria@email.com",  "F", "PASSAGEIRO", false));
-        usuarios.add(new Usuario(3, "Carlos Mota",  "carlos@email.com", "M", "MOTORISTA",  true));
-        usuarios.add(new Usuario(4, "Ana Ferreira", "ana@email.com",    "F", "MOTORISTA",  true));
+        usuarios.add(new Usuario(1, "Joao Silva", "joao@email.com", "M", "PASSAGEIRO", false));
+        usuarios.add(new Usuario(2, "Maria Souza", "maria@email.com", "F", "PASSAGEIRO", false));
+        usuarios.add(new Usuario(3, "Carlos Mota", "carlos@email.com", "M", "MOTORISTA", true));
+        usuarios.add(new Usuario(4, "Ana Ferreira", "ana@email.com", "F", "MOTORISTA", true));
 
         // ── Corridas históricas ───────────────────────────────────────────────
         // Parâmetros: (id, origem, destino, status, preco, idPassageiro, idMotorista, nomePassageiro, nomeMotorista)
-
         // Corrida 1: Joao foi atendido por Carlos — corrida concluída
         corrida c1 = new corrida(1, "Rua das Flores, 10", "Av. Paulista, 1000",
-                                 "CONCLUIDA", 18.50, 1, 3, "Joao Silva", "Carlos Mota");
+                "CONCLUIDA", 18.50, 1, 3, "Joao Silva", "Carlos Mota");
         c1.setGeneroPassageiro("M");
 
         // Corrida 2: Maria foi atendida por Ana — corrida concluída
         // (Esta é a regra de gênero em funcionamento: passageira F → motorista F)
         corrida c2 = new corrida(2, "Shopping Iguatemi", "Aeroporto Internacional",
-                                 "CONCLUIDA", 45.00, 2, 4, "Maria Souza", "Ana Ferreira");
+                "CONCLUIDA", 45.00, 2, 4, "Maria Souza", "Ana Ferreira");
         c2.setGeneroPassageiro("F");
 
         // Corrida 3: Corrida de Joao que foi cancelada — sem motorista vinculado
         corrida c3 = new corrida(3, "Centro Historico, 55", "Av. Brasil, 200",
-                                 "CANCELADA", 0.0, 1, 0, "Joao Silva", "");
+                "CANCELADA", 0.0, 1, 0, "Joao Silva", "");
         c3.setGeneroPassageiro("M");
 
         corridas.add(c1);
         corridas.add(c2);
         corridas.add(c3);
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: LOGIN
@@ -105,7 +102,9 @@ class MockData {
     // =========================================================================
     static Usuario fazerLogin(String email, String senha) {
         // Todos os usuários mock têm a senha "123456"
-        if (!"123456".equals(senha)) return null;
+        if (!"123456".equals(senha)) {
+            return null;
+        }
 
         // "stream()" permite percorrer a lista de forma elegante
         // "filter()" filtra apenas o usuário cujo e-mail bate com o informado
@@ -116,7 +115,6 @@ class MockData {
                 .findFirst().orElse(null);
     }
 
-
     // =========================================================================
     // SIMULAÇÃO: CADASTRO
     // Verifica se o e-mail já está em uso (evita duplicatas) e,
@@ -124,18 +122,18 @@ class MockData {
     // Retorna false se o e-mail já estiver cadastrado.
     // =========================================================================
     static boolean cadastrarUsuario(String nome, String email, String senha,
-                                    String genero, String tipo) {
+            String genero, String tipo) {
         // Verifica se já existe alguém com esse e-mail
         boolean jaExiste = usuarios.stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
-        if (jaExiste) return false; // E-mail duplicado, cadastro recusado
-
+        if (jaExiste) {
+            return false; // E-mail duplicado, cadastro recusado
+        }
         // Cria o novo usuário com um ID sequencial e adiciona à lista
         // "proximoIdUsuario++" usa o valor atual e depois incrementa
         usuarios.add(new Usuario(proximoIdUsuario++, nome, email, genero, tipo, false));
         return true;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: CALCULAR PREÇO
@@ -151,7 +149,6 @@ class MockData {
         return Math.round((5.0 + (origem.length() + destino.length()) * 0.25) * 100.0) / 100.0;
     }
 
-
     // =========================================================================
     // SIMULAÇÃO: SOLICITAR CORRIDA
     // Cria uma nova corrida com status AGUARDANDO e a adiciona à lista.
@@ -163,19 +160,19 @@ class MockData {
         Usuario passageiro = usuarios.stream()
                 .filter(u -> u.getId() == idPassageiro)
                 .findFirst().orElse(null);
-        if (passageiro == null) return -1; // Passageiro não encontrado
-
+        if (passageiro == null) {
+            return -1; // Passageiro não encontrado
+        }
         double preco = calcularPreco(origem, destino);
         int id = proximoIdCorrida++; // Gera um novo ID único para esta corrida
 
         // Cria a corrida com status AGUARDANDO e sem motorista (idMotorista = 0)
         corrida c = new corrida(id, origem, destino, "AGUARDANDO", preco,
-                                idPassageiro, 0, passageiro.getNome(), "");
+                idPassageiro, 0, passageiro.getNome(), "");
         c.setGeneroPassageiro(passageiro.getGenero()); // Define o gênero para filtrar motoristas
         corridas.add(c); // Adiciona à lista de corridas em memória
         return id;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: CORRIDAS DO PASSAGEIRO
@@ -184,11 +181,12 @@ class MockData {
     static List<corrida> corridasPassageiro(int idPassageiro) {
         List<corrida> resultado = new ArrayList<>();
         for (corrida c : corridas) {
-            if (c.getIdPassageiro() == idPassageiro) resultado.add(c);
+            if (c.getIdPassageiro() == idPassageiro) {
+                resultado.add(c);
+            }
         }
         return resultado;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: CORRIDAS DO MOTORISTA
@@ -197,11 +195,12 @@ class MockData {
     static List<corrida> corridasMotorista(int idMotorista) {
         List<corrida> resultado = new ArrayList<>();
         for (corrida c : corridas) {
-            if (c.getIdMotorista() == idMotorista) resultado.add(c);
+            if (c.getIdMotorista() == idMotorista) {
+                resultado.add(c);
+            }
         }
         return resultado;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: CORRIDAS DISPONÍVEIS (para motoristas)
@@ -219,18 +218,21 @@ class MockData {
         List<corrida> resultado = new ArrayList<>();
         for (corrida c : corridas) {
             // Ignora corridas que não estão aguardando um motorista
-            if (!"AGUARDANDO".equals(c.getStatus())) continue;
+            if (!"AGUARDANDO".equals(c.getStatus())) {
+                continue;
+            }
 
             // REGRA DE NEGÓCIO: passageira feminina só pode ser atendida
             // por motorista feminina. Se a passageira for F e o motorista
             // não for F, pula esta corrida.
-            if ("F".equals(c.getGeneroPassageiro()) && !"F".equals(generoMotorista)) continue;
+            if ("F".equals(c.getGeneroPassageiro()) && !"F".equals(generoMotorista)) {
+                continue;
+            }
 
             resultado.add(c);
         }
         return resultado;
     }
-
 
     // =========================================================================
     // SIMULAÇÃO: ACEITAR CORRIDA
@@ -256,7 +258,6 @@ class MockData {
         return false; // Corrida não encontrada ou já foi aceita por outro motorista
     }
 
-
     // =========================================================================
     // SIMULAÇÃO: RECUSAR CORRIDA
     // Muda o status da corrida para CANCELADA.
@@ -272,6 +273,21 @@ class MockData {
         return false;
     }
 
+    // =========================================================================
+    // SIMULAÇÃO: AVALIAR CORRIDA
+    // Registra a avaliação na corrida mock e guarda o comentário.
+    // Retorna a mesma mensagem que a interface de avaliação exibirá.
+    // =========================================================================
+    static String avaliarCorrida(int idCorrida, int avaliadorId, int avaliadoId,
+            int nota, String comentario) {
+        for (corrida c : corridas) {
+            if (c.getId() == idCorrida && "CONCLUIDA".equals(c.getStatus())) {
+                c.setComentario(comentario);
+                return "Avaliacao registrada (mock).";
+            }
+        }
+        return "Nao foi possivel registrar a avaliacao.";
+    }
 
     // =========================================================================
     // SIMULAÇÃO: ATUALIZAR DISPONIBILIDADE DO MOTORISTA

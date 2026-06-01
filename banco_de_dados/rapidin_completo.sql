@@ -98,6 +98,28 @@ CREATE TABLE IF NOT EXISTS corridas (
     CONSTRAINT chk_genero_passageiro CHECK (genero_passageiro IN ('M', 'F'))
 );
 
+-- ------------------------------------------------------------
+-- TABELA: avaliacoes
+--   Armazena avaliações feitas após corrida concluída.
+--   Única avaliação por corrida/avaliador.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS avaliacoes (
+    id_avaliacao INT          NOT NULL AUTO_INCREMENT,
+    id_corrida   INT          NOT NULL,
+    avaliador_id INT          NOT NULL,
+    avaliado_id  INT          NOT NULL,
+    nota         INT          NOT NULL,
+    comentario   TEXT         NULL,
+    data_hora    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id_avaliacao),
+    UNIQUE KEY uq_avaliacao_corrida_avaliador (id_corrida, avaliador_id),
+    CONSTRAINT fk_avaliacao_corrida   FOREIGN KEY (id_corrida)   REFERENCES corridas(id_corrida),
+    CONSTRAINT fk_avaliacao_avaliador FOREIGN KEY (avaliador_id) REFERENCES usuarios(id_usuario),
+    CONSTRAINT fk_avaliacao_avaliado  FOREIGN KEY (avaliado_id)  REFERENCES usuarios(id_usuario),
+    CONSTRAINT chk_nota CHECK (nota BETWEEN 1 AND 5)
+);
+
 
 -- ============================================================
 -- PASSO 3: STORED PROCEDURES
@@ -267,6 +289,11 @@ BEGIN
         IFNULL(c.id_motorista, 0)   AS id_motorista,   -- 0 quando ainda não há motorista
         u_p.nome                     AS nome_passageiro,
         IFNULL(u_m.nome, '')         AS nome_motorista, -- string vazia quando não há motorista
+        (SELECT a.comentario
+         FROM avaliacoes a
+         WHERE a.id_corrida = c.id_corrida
+           AND a.avaliado_id = p_id_passageiro
+         LIMIT 1)                   AS comentario,
         c.genero_passageiro
     FROM  corridas  c
     JOIN  usuarios  u_p ON c.id_passageiro = u_p.id_usuario
@@ -296,6 +323,11 @@ BEGIN
         IFNULL(c.id_motorista, 0)   AS id_motorista,
         u_p.nome                     AS nome_passageiro,
         IFNULL(u_m.nome, '')         AS nome_motorista,
+        (SELECT a.comentario
+         FROM avaliacoes a
+         WHERE a.id_corrida = c.id_corrida
+           AND a.avaliado_id = p_id_motorista
+         LIMIT 1)                   AS comentario,
         c.genero_passageiro
     FROM  corridas  c
     JOIN  usuarios  u_p ON c.id_passageiro = u_p.id_usuario
@@ -335,6 +367,7 @@ BEGIN
         IFNULL(c.id_motorista, 0)   AS id_motorista,
         u_p.nome                     AS nome_passageiro,
         IFNULL(u_m.nome, '')         AS nome_motorista,
+        NULL                         AS comentario,
         c.genero_passageiro
     FROM  corridas  c
     JOIN  usuarios  u_p ON c.id_passageiro = u_p.id_usuario
@@ -420,6 +453,79 @@ BEGIN
       AND tipo       = 'MOTORISTA';  -- Proteção: só motoristas podem ter disponibilidade alterada
 END$$
 
+
+-- ------------------------------------------------------------
+-- proc_avaliar_corrida
+--   Registra avaliação de uma corrida CONCLUÍDA.
+--   Chamada em: procedureExecutor.avaliarCorrida()
+--
+--   Parâmetros:
+--     p_id_corrida  - corrida avaliada
+--     p_avaliador   - usuário que faz a avaliação
+--     p_avaliado    - usuário que recebe a avaliação
+--     p_nota        - nota entre 1 e 5
+--     p_comentario  - texto opcional da avaliação
+--     p_mensagem    - mensagem de retorno para o app
+-- ------------------------------------------------------------
+DROP PROCEDURE IF EXISTS proc_avaliar_corrida$$
+CREATE PROCEDURE proc_avaliar_corrida(
+    IN  p_id_corrida INT,
+    IN  p_avaliador  INT,
+    IN  p_avaliado   INT,
+    IN  p_nota       INT,
+    IN  p_comentario TEXT,
+    OUT p_mensagem   VARCHAR(255)
+)
+BEGIN
+    DECLARE v_status_corrida VARCHAR(15);
+    DECLARE v_id_motorista    INT;
+    DECLARE v_id_passageiro   INT;
+    DECLARE v_corrida_existente INT DEFAULT 0;
+
+    SELECT COUNT(*)
+    INTO   v_corrida_existente
+    FROM   corridas
+    WHERE  id_corrida = p_id_corrida;
+
+    IF v_corrida_existente = 0 THEN
+        SET p_mensagem = 'Corrida nao encontrada.';
+    ELSE
+        SELECT status, id_motorista, id_passageiro
+        INTO   v_status_corrida, v_id_motorista, v_id_passageiro
+        FROM   corridas
+        WHERE  id_corrida = p_id_corrida
+        LIMIT 1;
+
+        IF v_status_corrida <> 'CONCLUIDA' THEN
+            SET p_mensagem = 'Apenas corridas concluídas podem ser avaliadas.';
+        ELSEIF NOT ((p_avaliador = v_id_passageiro AND p_avaliado = v_id_motorista)
+                OR (p_avaliador = v_id_motorista  AND p_avaliado = v_id_passageiro)) THEN
+            SET p_mensagem = 'Avaliador ou avaliado inválido para esta corrida.';
+        ELSEIF EXISTS (
+            SELECT 1
+            FROM avaliacoes
+            WHERE id_corrida = p_id_corrida
+              AND avaliador_id = p_avaliador
+        ) THEN
+            SET p_mensagem = 'Você já avaliou esta corrida.';
+        ELSE
+            INSERT INTO avaliacoes (
+                id_corrida,
+                avaliador_id,
+                avaliado_id,
+                nota,
+                comentario
+            ) VALUES (
+                p_id_corrida,
+                p_avaliador,
+                p_avaliado,
+                p_nota,
+                p_comentario
+            );
+            SET p_mensagem = 'Avaliacao registrada com sucesso.';
+        END IF;
+    END IF;
+END$$
 
 DELIMITER ;
 
