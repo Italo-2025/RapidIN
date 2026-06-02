@@ -146,6 +146,15 @@ CREATE TABLE logs_status_corrida (
                                      CONSTRAINT fk_logs_corrida FOREIGN KEY (corrida_id) REFERENCES corridas(id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE corridas_recusadas (
+    corrida_id   INT NOT NULL,
+    motorista_id INT NOT NULL,
+    recusada_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (corrida_id, motorista_id),
+    CONSTRAINT fk_recusa_corrida   FOREIGN KEY (corrida_id)   REFERENCES corridas(id)   ON DELETE CASCADE,
+    CONSTRAINT fk_recusa_motorista FOREIGN KEY (motorista_id) REFERENCES motoristas(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 
 -- ===================  views  =======================================
 -- view geral + view que filtra a partir dela (mais limpo)
@@ -973,9 +982,10 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS proc_corridas_disponiveis$$
 
 CREATE PROCEDURE proc_corridas_disponiveis(
-    IN p_genero_motorista VARCHAR (2)
+    IN p_genero_motorista VARCHAR(2),
+    IN p_motorista_id     INT
 )
-    BEGIN
+BEGIN
     SELECT
         c.id                AS id_corrida,
         eo.logradouro       AS origem,
@@ -995,7 +1005,22 @@ CREATE PROCEDURE proc_corridas_disponiveis(
              JOIN enderecos eo   ON eo.id      = c.origem_endereco_id
              JOIN enderecos ed   ON ed.id      = c.destino_endereco_id
     WHERE c.status = 'SOLICITADA'
-      AND (up.genero != 'F' OR p_genero_motorista = 'F');
+      AND (up.genero != 'F' OR p_genero_motorista = 'F')
+      AND c.id NOT IN (
+          SELECT corrida_id FROM corridas_recusadas WHERE motorista_id = p_motorista_id
+      );
+END$$
+
+DELIMITER $$
+DROP PROCEDURE IF EXISTS proc_recusar_corrida$$
+
+CREATE PROCEDURE proc_recusar_corrida(
+    IN p_corrida_id   INT,
+    IN p_motorista_id INT
+)
+BEGIN
+    INSERT IGNORE INTO corridas_recusadas (corrida_id, motorista_id)
+    VALUES (p_corrida_id, p_motorista_id);
 END$$
 
 DELIMITER $$
