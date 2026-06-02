@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"proc_login\\\\|DELIMITER\\\\|END\\\\$\\\\$\" \"C:/JavaProjects/RapidIN/banco_de_dados/rapidin_completo.sql\")"
+    ]
+  }
+}

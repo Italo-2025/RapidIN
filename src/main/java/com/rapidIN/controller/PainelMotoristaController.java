@@ -157,7 +157,7 @@ public class PainelMotoristaController {
         if (motorista == null) return;
 
         // Busca corridas com status AGUARDANDO, já filtradas pela regra de gênero
-        List<corrida> corridas = procedureExecutor.corridasDisponiveis(motorista.getGenero());
+        List<corrida> corridas = procedureExecutor.corridasDisponiveis(motorista.getGenero(), motorista.getIdMotorista());
 
         // Preenche a tabela com os dados obtidos
         tabelaDisponiveis.setItems(FXCollections.observableArrayList(corridas));
@@ -337,7 +337,7 @@ public class PainelMotoristaController {
         }
     }
 
-    // ── MÉTODO AUXILIAR: ATUALIZAR TEXTO DO TOGGLE ───────────────────────────
+    // ── METODO AUXILIAR: ATUALIZAR TEXTO DO TOGGLE ───────────────────────────
     // Atualiza o rótulo do botão ONLINE/OFFLINE conforme o estado atual.
     // Chamado sempre que o status de disponibilidade muda.
     private void atualizarTextoToggle() {

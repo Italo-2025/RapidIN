@@ -232,13 +232,14 @@ public class procedureExecutor {
     //
     // Stored procedure chamada: sp_corridas_disponiveis(genero_motorista)
     // =========================================================================
-    public static List<corrida> corridasDisponiveis(String generoMotorista) {
+    public static List<corrida> corridasDisponiveis(String generoMotorista, int idMotorista) {
         if (MOCK_MODE) return MockData.corridasDisponiveis(generoMotorista);
 
         List<corrida> lista = new ArrayList<>();
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL proc_corridas_disponiveis(?)}")) {
-            stmt.setString(1, generoMotorista); // "M" ou "F"
+                .prepareCall("{CALL proc_corridas_disponiveis(?, ?)}")) {
+            stmt.setString(1, generoMotorista);
+            stmt.setInt(2, idMotorista);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) lista.add(mapearCorrida(rs));
         } catch (SQLException e) {
@@ -285,11 +286,9 @@ public class procedureExecutor {
         if (MOCK_MODE) return MockData.recusarCorrida(idCorrida);
 
         try (CallableStatement stmt = conexao.getConexao()
-                .prepareCall("{CALL proc_cancelar_corrida(?, ?, ?, ?)}")) {
+                .prepareCall("{CALL proc_recusar_corrida(?, ?)}")) {
             stmt.setInt(1, idCorrida);
-            stmt.setString(2, "MOTORISTA");
-            stmt.setInt(3, idMotorista);
-            stmt.registerOutParameter(4, Types.VARCHAR);
+            stmt.setInt(2, idMotorista);
             stmt.execute();
             return true;
         } catch (SQLException e) {
