@@ -3,12 +3,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.rapidIN.controller.CadastroController"
-      styleClass="tela-inicial"
-      alignment="CENTER"
-      spacing="18"
-      prefWidth="900" prefHeight="660">
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.rapidIN.controller.CadastroController"
+            fitToWidth="true"
+            prefWidth="900" prefHeight="660">
+
+    <VBox styleClass="tela-inicial"
+          alignment="CENTER"
+          spacing="18">
 
     <Label text="RapidIN" styleClass="titulo-principal"/>
     <Label text="Criar nova conta" styleClass="subtitulo"/>
@@ -42,6 +44,35 @@
             <RadioButton fx:id="radioMotorista"  text="Motorista"  styleClass="radio-campo"/>
         </HBox>
 
+        <Label text="CPF" styleClass="label-campo"/>
+        <TextField fx:id="campoCpf"
+                   promptText="Seu CPF (somente numeros)"
+                   styleClass="campo-texto"/>
+
+        <Label text="Telefone" styleClass="label-campo"/>
+        <TextField fx:id="campoTelefone"
+                   promptText="Seu telefone (somente numeros)"
+                   styleClass="campo-texto"/>
+
+        <Label fx:id="labelCnh" text="CNH" styleClass="label-campo"/>
+        <TextField fx:id="campoCnh"
+                   promptText="Sua CNH (somente numeros)"
+                   styleClass="campo-texto"/>
+
+        <Label fx:id="labelModelo" text="Modelo do veiculo" styleClass="label-campo"/>
+        <TextField fx:id="campoModelo"
+                   promptText="O modelo do seu veículo"
+                   styleClass="campo-texto"/>
+
+        <Label fx:id="labelPlaca" text="Placa do veículo" styleClass="label-campo"/>
+        <TextField fx:id="campoPlaca"
+                   promptText="Placa do seu veículo"
+                   styleClass="campo-texto"/>
+
+        <Label text="Forma de pagamento" styleClass="label-campo"/>
+        <ComboBox fx:id="comboFormaPagamento"
+                  styleClass="campo-texto"/>
+
         <Button text="Criar Conta"
                 onAction="#cadastrar"
                 styleClass="botao-primario"/>
@@ -58,3 +89,4 @@
     </VBox>
 
 </VBox>
+</ScrollPane>

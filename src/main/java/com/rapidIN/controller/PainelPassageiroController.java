@@ -39,6 +39,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;                    // Label, TextField, TableView, TableColumn etc.
 import javafx.scene.control.cell.PropertyValueFactory; // Liga colunas da tabela aos campos do objeto
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PainelPassageiroController {
@@ -51,6 +53,12 @@ public class PainelPassageiroController {
     @FXML private Label labelPreco;            // Exibe o preço estimado após calcular
     @FXML private Label labelStatus;           // Exibe mensagens de feedback ao usuário
     @FXML private Label labelCorridaAtualInfo; // Exibe detalhes da corrida recém-solicitada
+    @FXML private Label labelTotalCorridas;
+    @FXML private Label labelConcluidas;
+    @FXML private Label labelCanceladas;
+    @FXML private Label labelSemMotoristaFeminina;
+    @FXML private Label labelGastoTotal;
+    @FXML private Label labelDesativar;
 
     // Tabela que exibe o histórico de corridas do passageiro
     @FXML private TableView<corrida> tabelaHistorico;
@@ -164,6 +172,31 @@ public class PainelPassageiroController {
         }
     }
 
+    @FXML
+    private void cancelarCorrida() {
+        if (usuario == null) return;
+
+        // busca a corrida atual do passageiro
+        List<corrida> corridas = procedureExecutor.corridasPassageiro(usuario.getId());
+        corrida ativa = corridas.stream()
+                .filter(c -> c.getStatus().equals("SOLICITADA") || c.getStatus().equals("ACEITA"))
+                .findFirst()
+                .orElse(null);
+
+        if (ativa == null) {
+            labelStatus.setText("Nenhuma corrida ativa para cancelar.");
+            return;
+        }
+
+        boolean ok = procedureExecutor.cancelarCorrida(ativa.getId(), "PASSAGEIRO", usuario.getId());
+
+        if (ok) {
+            labelStatus.setText("Corrida cancelada com sucesso!");
+            carregarHistorico();
+        } else {
+            labelStatus.setText("Nao foi possivel cancelar a corrida.");
+        }
+    }
 
     // ── AÇÃO: BOTÃO "ATUALIZAR HISTÓRICO" ────────────────────────────────────
     // Recarrega a lista de corridas do passageiro a partir do banco.
@@ -180,6 +213,34 @@ public class PainelPassageiroController {
         tabelaHistorico.setItems(FXCollections.observableArrayList(corridas));
     }
 
+    @FXML
+    private void carregarEstatisticas() {
+        try {
+            ResultSet rs = procedureExecutor.estatisticasPassageiro(usuario.getId());
+            if (rs != null && rs.next()) {
+                labelTotalCorridas.setText("Total de corridas: "           + rs.getInt("total_corridas_solicitadas"));
+                labelConcluidas.setText("Corridas concluidas: "            + rs.getInt("corridas_concluidas"));
+                labelCanceladas.setText("Corridas canceladas: "            + rs.getInt("corridas_canceladas"));
+                labelSemMotoristaFeminina.setText("Vezes sem motorista feminina: " + rs.getInt("vezes_sem_motorista_feminina"));
+                labelGastoTotal.setText("Gasto total: R$ "                 + rs.getDouble("gasto_total_brl"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao carregar estatisticas: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void desativarConta() {
+        boolean ok = procedureExecutor.desativarUsuario(usuario.getId());
+        if (ok) {
+            labelDesativar.setText("Conta desativada com sucesso!");
+            SessionManager.getInstance().encerrarSessao();
+            try { App.trocarTela("tela-inicial.fxml"); }
+            catch (Exception e) { e.printStackTrace(); }
+        } else {
+            labelDesativar.setText("Nao foi possivel desativar. Verifique se ha corrida ativa.");
+        }
+    }
 
     // ── AÇÃO: BOTÃO "SAIR" (LOGOUT) ──────────────────────────────────────────
     // Encerra a sessão do usuário e volta para a tela de login.

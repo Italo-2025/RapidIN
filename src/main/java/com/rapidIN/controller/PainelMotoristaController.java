@@ -41,6 +41,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PainelMotoristaController {
@@ -50,6 +52,13 @@ public class PainelMotoristaController {
     @FXML private Label labelNomeMotorista;   // Exibe "Olá, [Nome]" no topo
     @FXML private ToggleButton toggleDisponivel; // Botão interruptor ONLINE/OFFLINE
     @FXML private Label labelAcaoStatus;      // Exibe feedback das ações (aceitar, recusar etc.)
+    @FXML private Label labelTotalCorridas;
+    @FXML private Label labelConcluidas;
+    @FXML private Label labelCanceladas;
+    @FXML private Label labelGanhoTotal;
+    @FXML private Label labelDistanciaTotal;
+    @FXML private Label labelNotaMedia;
+    @FXML private Label labelDesativar;
 
     // ── Tabela de corridas disponíveis ──────────────────────────────────────
     // Exibe corridas com status AGUARDANDO que o motorista pode aceitar
@@ -171,7 +180,7 @@ public class PainelMotoristaController {
         // Tenta aceitar a corrida no banco de dados
         // Retorna false se a corrida já foi aceita por outro motorista entre
         // o carregamento da lista e o clique (condição de corrida)
-        boolean ok = procedureExecutor.aceitarCorrida(selecionada.getId(), motorista.getId());
+        boolean ok = procedureExecutor.aceitarCorrida(selecionada.getId(), motorista.getIdMotorista());
 
         if (ok) {
             // Aceito com sucesso — informa o endereço de origem para o motorista ir buscar
@@ -185,6 +194,73 @@ public class PainelMotoristaController {
             labelAcaoStatus.setText("Nao foi possivel aceitar. Corrida ja foi aceita por outro motorista.");
         }
     }
+
+    @FXML
+    private void iniciarCorrida() {
+        // Obtém a corrida que o motorista clicou/selecionou na tabela
+        corrida selecionada = tabelaHistoricoMotorista.getSelectionModel().getSelectedItem();
+
+        // Verifica se o motorista realmente selecionou uma corrida
+        if (selecionada == null) {
+            labelAcaoStatus.setText("Selecione uma corrida na tabela.");
+            return;
+        }
+
+        // Tenta aceitar a corrida no banco de dados
+        // Retorna false se a corrida já foi aceita por outro motorista entre
+        // o carregamento da lista e o clique (condição de corrida)
+        boolean ok = procedureExecutor.iniciarCorrida(selecionada.getId(), motorista.getIdMotorista());
+
+        if (ok) {
+            // Iniciada com sucesso — informa o endereço de destino para o motorista levar
+            labelAcaoStatus.setText("Corrida iniciada! Indo até:" + selecionada.getDestino());
+
+            // Atualiza ambas as tabelas: a corrida sai de "disponíveis" e entra no histórico
+            carregarCorridasDisponiveis();
+            carregarHistorico();
+        } else {
+            // Outro motorista aceitou antes — situação normal em ambiente com múltiplos motoristas
+            labelAcaoStatus.setText("Nao foi possivel iniciar. Corrida ja foi aceita por outro motorista.");
+        }
+    }
+
+    @FXML
+    private void finalizarCorrida() {
+        // Obtém a corrida que o motorista clicou/selecionou na tabela
+        corrida selecionada = tabelaHistoricoMotorista.getSelectionModel().getSelectedItem();
+
+        // Verifica se o motorista realmente selecionou uma corrida
+        if (selecionada == null) {
+            labelAcaoStatus.setText("Selecione uma corrida na tabela.");
+            return;
+        }
+
+        // Calcula preço e distância
+        double preco = procedureExecutor.calcularPreco(
+                selecionada.getOrigem(),
+                selecionada.getDestino()
+        );
+        double distancia = 1 + (Math.random() * 20);
+
+        // Tenta aceitar a corrida no banco de dados
+        // Retorna false se a corrida já foi aceita por outro motorista entre
+        // o carregamento da lista e o clique (condição de corrida)
+        boolean ok = procedureExecutor.finalizarCorrida(selecionada.getId(), motorista.getIdMotorista(), preco, distancia);
+
+        if (ok) {
+            // Iniciada com sucesso — informa o endereço de destino para o motorista levar
+            labelAcaoStatus.setText("Corrida finalizad! De: " + selecionada.getOrigem() +" até: "+selecionada.getDestino());
+
+            // Atualiza ambas as tabelas: a corrida sai de "disponíveis" e entra no histórico
+            carregarCorridasDisponiveis();
+            carregarHistorico();
+        } else {
+            // Outro motorista aceitou antes — situação normal em ambiente com múltiplos motoristas
+            labelAcaoStatus.setText("Nao foi possivel iniciar.");
+        }
+    }
+
+
 
 
     // ── AÇÃO: BOTÃO "RECUSAR CORRIDA" ─────────────────────────────────────────
@@ -200,7 +276,7 @@ public class PainelMotoristaController {
         }
 
         // Recusa a corrida no banco — muda status para CANCELADA
-        procedureExecutor.recusarCorrida(selecionada.getId());
+        procedureExecutor.recusarCorrida(selecionada.getId(), motorista.getIdMotorista());
         labelAcaoStatus.setText("Corrida recusada.");
 
         // Atualiza a tabela de disponíveis (a corrida recusada some da lista)
@@ -214,7 +290,7 @@ public class PainelMotoristaController {
     private void carregarHistorico() {
         if (motorista == null) return;
 
-        List<corrida> corridas = procedureExecutor.corridasMotorista(motorista.getId());
+        List<corrida> corridas = procedureExecutor.corridasMotorista(motorista.getIdMotorista());
         tabelaHistoricoMotorista.setItems(FXCollections.observableArrayList(corridas));
     }
 
@@ -231,6 +307,35 @@ public class PainelMotoristaController {
         }
     }
 
+    @FXML
+    private void carregarEstatisticas() {
+        try {
+            ResultSet rs = procedureExecutor.estatisticasMotorista(motorista.getIdMotorista());
+            if (rs != null && rs.next()) {
+                labelTotalCorridas.setText("Total de corridas: "  + rs.getInt("total_corridas"));
+                labelConcluidas.setText("Corridas concluidas: "   + rs.getInt("corridas_concluidas"));
+                labelCanceladas.setText("Corridas canceladas: "   + rs.getInt("corridas_canceladas"));
+                labelGanhoTotal.setText("Ganho total: R$ "        + rs.getDouble("ganho_total_brl"));
+                labelDistanciaTotal.setText("Distancia total: "   + rs.getDouble("distancia_total_km") + " km");
+                labelNotaMedia.setText("Nota media: "             + rs.getDouble("nota_media"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao carregar estatisticas: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void desativarConta() {
+        boolean ok = procedureExecutor.desativarUsuario(motorista.getId());
+        if (ok) {
+            labelDesativar.setText("Conta desativada com sucesso!");
+            SessionManager.getInstance().encerrarSessao();
+            try { App.trocarTela("tela-inicial.fxml"); }
+            catch (Exception e) { e.printStackTrace(); }
+        } else {
+            labelDesativar.setText("Nao foi possivel desativar. Verifique se ha corrida ativa.");
+        }
+    }
 
     // ── MÉTODO AUXILIAR: ATUALIZAR TEXTO DO TOGGLE ───────────────────────────
     // Atualiza o rótulo do botão ONLINE/OFFLINE conforme o estado atual.

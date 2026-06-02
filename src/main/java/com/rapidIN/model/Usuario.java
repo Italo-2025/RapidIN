@@ -43,7 +43,9 @@ public class Usuario {
     private String genero;        // Gênero: "M" para masculino, "F" para feminino
     private String tipo;          // Perfil: "PASSAGEIRO" ou "MOTORISTA"
     private boolean disponivel;   // Indica se o motorista está online (aceitando corridas)
-                                  // Sempre false para passageiros (não se aplica a eles)
+
+    // Sempre false para passageiros (não se aplica a eles)
+    private int idMotorista;      // ID da tabela motoristas (diferente do id da tabela usuarios)
 
     // ── CONSTRUTORES ─────────────────────────────────────────────────────────
     // Um construtor é chamado quando criamos um novo objeto Usuario.
@@ -96,6 +98,10 @@ public class Usuario {
     // Status de disponibilidade (somente relevante para motoristas)
     public boolean isDisponivel() { return disponivel; }
     public void setDisponivel(boolean disponivel) { this.disponivel = disponivel; }
+
+    public int getIdMotorista() { return idMotorista; }
+    public void setIdMotorista(int idMotorista) {this.idMotorista = idMotorista;}
+
 
     // ── MÉTODOS DE VERIFICAÇÃO ────────────────────────────────────────────────
     // Estes métodos facilitam verificar o tipo do usuário sem

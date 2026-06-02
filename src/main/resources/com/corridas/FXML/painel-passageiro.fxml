@@ -53,6 +53,10 @@
                             onAction="#solicitarCorrida"
                             styleClass="botao-primario"/>
 
+                    <Button text="Cancelar Corrida"
+                            onAction="#cancelarCorrida"
+                            styleClass="botao-secundario"/>
+
                     <Label fx:id="labelStatus"
                            text=""
                            styleClass="status-aguardando"
@@ -79,6 +83,9 @@
                     <Button text="Atualizar"
                             onAction="#carregarHistorico"
                             styleClass="botao-secundario"/>
+
+                    <Button text="Avaliar Corrida"
+                            styleClass="botao-primario"/>
                 </HBox>
 
                 <TableView fx:id="tabelaHistorico" VBox.vgrow="ALWAYS">
@@ -90,6 +97,30 @@
                         <TableColumn fx:id="colMotorista" text="Motorista" prefWidth="170"/>
                     </columns>
                 </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Tab: Estatisticas -->
+        <Tab text="Estatisticas">
+            <VBox styleClass="conteudo-tab" spacing="16">
+                <Label text="Suas Estatisticas" styleClass="titulo-secao"/>
+                <Button text="Carregar Estatisticas"
+                        onAction="#carregarEstatisticas"
+                        styleClass="botao-secundario"/>
+                <Label fx:id="labelTotalCorridas"        text="Total de corridas: --"              styleClass="label-campo"/>
+                <Label fx:id="labelConcluidas"           text="Corridas concluidas: --"            styleClass="label-campo"/>
+                <Label fx:id="labelCanceladas"           text="Corridas canceladas: --"            styleClass="label-campo"/>
+                <Label fx:id="labelSemMotoristaFeminina" text="Vezes sem motorista feminina: --"   styleClass="label-campo"/>
+                <Label fx:id="labelGastoTotal"           text="Gasto total: R$ --"                styleClass="label-campo"/>
+
+                <Button text="Desativar Conta"
+                        onAction="#desativarConta"
+                        styleClass="botao-secundario"/>
+                <Label fx:id="labelDesativar"
+                       text=""
+                       styleClass="label-campo"
+                       wrapText="true"/>
+
             </VBox>
         </Tab>
 

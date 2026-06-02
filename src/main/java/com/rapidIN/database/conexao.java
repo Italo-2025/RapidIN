@@ -45,7 +45,7 @@ public class conexao {
     //   - "localhost" significa que o banco está na mesma máquina que o sistema
     //   - "3306" é a porta padrão do MySQL
     //   - "rapidin_db" é o nome do banco de dados
-    private static final String URL     = "jdbc:mysql://localhost:3306/RapidIN";
+    private static final String URL     = "jdbc:mysql://localhost:3306/rapdin";
 
     // USUARIO: nome de usuário para autenticação no banco de dados
     private static final String USUARIO = "root";
