@@ -1,7 +1,7 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=900&size=42&pause=1000&color=E53935&center=true&vCenter=true&width=700&lines=🚗+RapidIN;Plataforma+de+Mobilidade+Urbana;Segurança+%26+Velocidade" alt="Typing SVG" />
-
+# 🚗 RapidIN
+### Plataforma de Mobilidade Urbana — Segurança & Velocidade
 <br/>
 
 ![Java](https://img.shields.io/badge/Java-17-E53935?style=for-the-badge&logo=openjdk&logoColor=white)
